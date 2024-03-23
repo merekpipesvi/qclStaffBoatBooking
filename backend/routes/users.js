@@ -4,9 +4,8 @@ import { getUserById, getUsers, createUser } from '../database.js';
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-    res.send('TESTING');
-    // const users = await getUsers();
-    // res.send(users);
+    const users = await getUsers();
+    res.send(users);
 })
 
 router.get("/:userId", async (req, res) => {
