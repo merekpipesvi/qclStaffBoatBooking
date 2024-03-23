@@ -17,7 +17,7 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
 });
 
-app.use('/users', userRouter);
+app.use('/api/users', userRouter);
 
 app.post('/register', async (req, res) => {
     const { firstName, lastName, email, password, fishingLicence, pcoc } = req.body;
