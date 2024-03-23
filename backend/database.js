@@ -13,9 +13,7 @@ const pool = mysql.createPool({
 }).promise();
 
 export async function getUsers() {
-    console.log('Hit get users');
     const [rows] = await pool.query(`SELECT ${getUserColumnsString} FROM qcl.user`);
-    console.log('Passed pool.query');
     return rows;
 }
 
