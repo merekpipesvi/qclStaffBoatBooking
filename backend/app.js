@@ -51,8 +51,8 @@ app.get('/me', validateToken, (req, res) => {
 });
 
 
-app.listen(8080, () => {
-    console.log('Server running on port 8080');
+app.listen(8800, () => {
+    console.log('Server running on port 8800');
 });
 
 
