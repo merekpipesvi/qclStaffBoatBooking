@@ -9,7 +9,7 @@ import { COOKIE_NAME, DEFAULT_USER_ROLE, HASH_ROUNDS, MINUTES } from './constant
 
 const app = express();
 app.use(express.json());
-app.use(cors({origin: "*", credentials: true}));
+app.use(cors());
 app.use(cookieParser());
 
 app.use((err, req, res, next) => {
