@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
+  "homepage": ".",
   "main": "database.js",
   "scripts": {
     "dev": "npx nodemon app.js",
