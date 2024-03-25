@@ -6,7 +6,8 @@ import { Provider } from 'react-redux';
 import { theme } from '../theme';
 import '../styles/global.css';
 import { Header } from '@/components/Header/Header';
-import { store } from '@/app/store';
+import { store } from '@/state/store';
+import { AuthWrapper } from '@/utils/AuthWrapper';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -20,10 +21,12 @@ export default function App({ Component, pageProps }: AppProps) {
           />
           <link rel="shortcut icon" href="/favicon.svg" />
         </Head>
-        <main className="spa">
-        <Header />
-        <Component {...pageProps} />
-        </main>
+        <AuthWrapper>
+          <main className="spa">
+            <Header />
+              <Component {...pageProps} />
+          </main>
+        </AuthWrapper>
       </MantineProvider>
     </Provider>
   );

@@ -10,9 +10,11 @@ export const validateToken = (req, res, next) => {
         return res.status(400).json({ error: "User not authenticated :("});
     } else {
         try {
-            const isValidToken = jwt.verify(accessToken, process.env.JWT_SECRET);
-            if (isValidToken) {
+            const user = jwt.verify(accessToken, process.env.JWT_SECRET);
+            if (user) {
                 req.authenticated = true;
+                req.userId = user.userId;
+                req.role = user.role;
                 return next();
             }
         } catch (error) {

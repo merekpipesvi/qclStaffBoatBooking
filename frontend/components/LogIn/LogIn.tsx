@@ -12,7 +12,10 @@ import {
   Anchor,
   Stack,
 } from '@mantine/core';
-import { useLoginMutation, useMeQuery, useRegisterMutation } from '@/services/apiSlice';
+import React from 'react';
+import { useRouter } from 'next/router';
+import { useLoginMutation, useRegisterMutation } from '@/services/authApi';
+import styles from './Login.module.css';
 
 export const LogIn = (props: PaperProps) => {
   const [type, toggle] = useToggle(['login', 'register']);
@@ -32,23 +35,30 @@ export const LogIn = (props: PaperProps) => {
     },
   });
 
-  const [registerUser] = useRegisterMutation();
-  const [loginUser] = useLoginMutation();
-  useMeQuery();
+  const [registerUser, registerFlags] = useRegisterMutation();
+  const [loginUser, loginFlags] = useLoginMutation();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (registerFlags.isSuccess || loginFlags.isSuccess) {
+      router.push('/booking');
+    }
+  }, [router, registerFlags.isSuccess, loginFlags.isSuccess]);
+
+  const onSubmit = () => {
+    const onSubmitFunction = type === 'login' ? loginUser : registerUser;
+    onSubmitFunction(form.values);
+  };
 
   return (
     <Paper radius="md" p="xl" withBorder {...props}>
       <Text size="lg" fw={500}>
         Welcome to QCL Staff Boat Booking
       </Text>
-
+      {loginFlags.isError ? <Text size="md" className={styles.loginFailed}>Log in failed. Please try again.</Text> : null}
       <Divider label={`Please ${type} below`} labelPosition="center" my="lg" />
-
-      <form onSubmit={form.onSubmit(() => {
-        loginUser(form.values);
-      })}>
+      <form onSubmit={form.onSubmit(onSubmit)}>
         <Stack>
-
             <TextInput
               required
               label="Email"

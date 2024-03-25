@@ -1,11 +1,9 @@
-import { Welcome } from '../components/Welcome/Welcome';
-import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
+import classes from '../styles/LogInPage.module.css';
+import { LogIn } from '../components/LogIn/LogIn';
 
-export default function HomePage() {
-  return (
-    <>
-      <Welcome />
-      <ColorSchemeToggle />
-    </>
-  );
-}
+const HomePage = () => (
+    <div className={classes.container}>
+        <LogIn />
+    </div>
+);
+export default HomePage;
