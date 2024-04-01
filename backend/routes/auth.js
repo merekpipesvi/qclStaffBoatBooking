@@ -10,7 +10,7 @@ router.post('/register', async (req, res) => {
     const { firstName, lastName, email, password, fishingLicence, pcoc } = req.body;
     try {
         const hashPassword = await bcrypt.hash(password, HASH_ROUNDS);
-        const createdUser = await createUser({ firstName, lastName, email, password: hashPassword, role: DEFAULT_USER_ROLE, fishingLicence, pcoc });
+        const createdUser = await createUser({ firstName, lastName, email, password: hashPassword, role: DEFAULT_USER_ROLE, fishingLicence, pcoc, points: 0 });
         res.status(201).send(createdUser);
     } catch (error) {
         res.status(400).json({ error })

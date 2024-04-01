@@ -1,6 +1,8 @@
+import { MainPageCalendar } from '@/components/MainPageCalendar/MainPageCalendar';
+
 const Booking = () => (
     <div>
-        Hello
+        <MainPageCalendar />
     </div>
 );
 

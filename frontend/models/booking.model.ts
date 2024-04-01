@@ -1,9 +1,15 @@
 export type GetBookingModel = {
-    date: Date;
+    bookingId: number;
+    date: string;
     // undefined if booking is a full day, true or false if it's a half day
-    isMorningBooking?: boolean;
+    isMorningBooking?: boolean | null;
     // undefined if the user is not subject to confirmation. False if the user is unconfirmed. True if they are.
     isConfirmed?: boolean;
     userId: number;
     timeBooked: Date;
+    isPriority: boolean;
 };
+
+export type GetUsersForBookingArg = Pick<GetBookingModel, 'isMorningBooking' | 'date'>;
+
+export type PostBookingModel = Pick<GetBookingModel, 'date' | 'isMorningBooking'>;

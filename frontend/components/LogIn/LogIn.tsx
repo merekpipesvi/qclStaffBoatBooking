@@ -16,6 +16,9 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { useLoginMutation, useRegisterMutation } from '@/services/authApi';
 import styles from './Login.module.css';
+import { useAppSelector } from '@/utils/reduxHooks';
+import { selectCurrentUser } from '@/state/authSelectors';
+import { DEEPLINK_URL_ARG } from '@/utils/constants';
 
 export const LogIn = (props: PaperProps) => {
   const [type, toggle] = useToggle(['login', 'register']);
@@ -30,7 +33,7 @@ export const LogIn = (props: PaperProps) => {
     },
 
     validate: {
-      email: (val: string) => (/^\S+@\S+$/.test(val) && val.includes('@fishqcl.com') ? null : 'Invalid email. Use your QCL email.'),
+      email: (val: string) => (/^\S+@\S+$/.test(val) ? null : 'Invalid email.'),
       password: (val: string) => (val.length < 6 ? 'Password should include at least 6 characters' : null),
     },
   });
@@ -38,12 +41,14 @@ export const LogIn = (props: PaperProps) => {
   const [registerUser, registerFlags] = useRegisterMutation();
   const [loginUser, loginFlags] = useLoginMutation();
   const router = useRouter();
+  const currentUser = useAppSelector(selectCurrentUser);
+  const deeplink = router.query[DEEPLINK_URL_ARG] as string | null;
 
   React.useEffect(() => {
-    if (registerFlags.isSuccess || loginFlags.isSuccess) {
-      router.push('/booking');
+    if (registerFlags.isSuccess || loginFlags.isSuccess || currentUser !== undefined) {
+      router.push(deeplink ?? '/booking');
     }
-  }, [router, registerFlags.isSuccess, loginFlags.isSuccess]);
+  }, [router, registerFlags.isSuccess, loginFlags.isSuccess, currentUser, deeplink]);
 
   const onSubmit = () => {
     const onSubmitFunction = type === 'login' ? loginUser : registerUser;

@@ -3,3 +3,11 @@
     background-image: url('https://www.queencharlottelodge.com/wp-content/uploads/2023/05/20904012_2500.jpg');
     background-position: center;
 }
+
+li {
+    list-style-type: none;
+}
+
+.mantine-Modal-title {
+    width: 100%;
+}

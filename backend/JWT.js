@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { COOKIE_NAME } from './constants.js';
+import { COOKIE_NAME, MINUTES } from './constants.js';
 
 export const createTokens = (user) => (jwt.sign({userId: user.userId, role: user.role}, process.env.JWT_SECRET, { expiresIn: '1h' }));
 
@@ -20,5 +20,15 @@ export const validateToken = (req, res, next) => {
         } catch (error) {
             return res.status(400).json({ error });
         }
+    }
+}
+
+export const keepAlive = (req, res, next) => {
+    const accessToken = req.cookies[COOKIE_NAME];
+    if (!accessToken) {
+        return res.status(400).json({ error: "User not authenticated :("});
+    } else {
+        res.cookie(COOKIE_NAME, accessToken, { maxAge: 15*MINUTES, httpOnly: true });
+        return next();
     }
 }
