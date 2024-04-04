@@ -8,14 +8,14 @@ export const sendEmail = async ({userId}) => {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'qclStaffFishing@gmail.com',
-                pass: 'vmyq jqgr ntsw sicg',
+                user: process.env.NODE_MAILER_EMAIL,
+                pass: process.env.NODE_MAILER_PASS,
             },
         });
 
         const mailOptions = {
-            from: 'qclStaffFishing@gmail.com',
-            to: 'qclStaffFishing@gmail.com',
+            from: process.env.NODE_MAILER_EMAIL,
+            to: process.env.NODE_MAILER_EMAIL,
             subject: 'Testing sending out emails',
             html: `
             <!DOCTYPE html>
@@ -84,5 +84,11 @@ export const sendEmail = async ({userId}) => {
 
 
 sendEmail({userId: 1})
-    .then(result => console.log(result))
-    .catch(err => console.error(err));
+    .then(result => {
+        console.log(result)
+        process.exit(0);
+    })
+    .catch(err => {
+        console.error(err);
+        process.exit(1);
+    });

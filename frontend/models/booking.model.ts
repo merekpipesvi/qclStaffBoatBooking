@@ -13,3 +13,5 @@ export type GetBookingModel = {
 export type GetUsersForBookingArg = Pick<GetBookingModel, 'isMorningBooking' | 'date'>;
 
 export type PostBookingModel = Pick<GetBookingModel, 'date' | 'isMorningBooking'>;
+
+export type ConfirmBookingModel = Pick<GetBookingModel, 'bookingId'>;

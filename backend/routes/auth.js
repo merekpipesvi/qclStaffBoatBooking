@@ -22,9 +22,10 @@ router.post('/login', async (req, res) => {
     
     const user = await getUserForLogIn(email);
     const passwordsMatch = await bcrypt.compare(password, user.password);
-
     if (user == null || !passwordsMatch) {
-        res.status(400).json({error: "That email and password don't match our records"});
+        res.status(401).json({error: "InvalidCredentials"});
+    } else if (!user.isConfirmed) {
+        res.status(401).json({error: "UnconfirmedAccount"});
     } else {
         const accessToken = createTokens(user);
         res.cookie(COOKIE_NAME, accessToken, { maxAge: 15*MINUTES, httpOnly: true });

@@ -1,6 +1,8 @@
-import mysql from 'mysql2'
-import dotenv from 'dotenv'
+import mysql from 'mysql2';
+import dotenv from 'dotenv';
+import { parseISO, getDay } from 'date-fns';
 import { BOATS_AVAILABLE } from './constants.js';
+import { splitFilter } from './helpers.js';
 
 dotenv.config();
 
@@ -21,7 +23,7 @@ export async function getUsers() {
 }
 
 export async function getUserForLogIn(email) {
-    const [rows] = await pool.query(`SELECT ${getUserColumnsString}, password FROM qcl.user WHERE email = ?`, [email]);
+    const [rows] = await pool.query(`SELECT ${getUserColumnsString}, password, isConfirmed FROM qcl.user WHERE email = ?`, [email]);
     return rows[0];
 }
 
@@ -126,6 +128,86 @@ export async function deleteBooking({date, isMorningBooking, userId}) {
     DELETE FROM booking WHERE date = ? AND isMorningBooking IS ? AND userId = ?;
 `, [date, isMorningBooking, userId]);
     return true;
+}
+
+// By design, we can only get bookings that are today that need confirming
+export async function getBookingsNeedingConfirmation({userId}) {
+    const  [booking] = await pool.query(`
+    SELECT *
+    FROM booking
+    WHERE date = CURDATE()
+    AND userId = ?
+    AND isConfirmed is NOT NULL;
+    `, [userId]);
+    return booking;
+}
+
+// Confirm a booking by bookingId. Added in userId so others cant alter my booking
+export async function confirmBooking({bookingId, userId}) {
+    await pool.query(`
+        UPDATE booking
+        SET isConfirmed = TRUE
+        WHERE bookingId = ?
+        AND userId = ?;
+    `, [bookingId, userId]);
+    return true;
+}
+
+export async function unconfirmBooking({bookingId, userId}) {
+    await pool.query(`
+        UPDATE booking
+        SET isConfirmed = FALSE
+        WHERE bookingId = ?
+        AND userId = ?;
+    `, [bookingId, userId]);
+    return true;
+}
+
+/**
+ * Returns an array of userIds to email asking about confirmation.
+ * 
+ * If the array is empty, no confirmation is needed for the booking period.
+ * 
+ * If there are two arrays, the day is a half day, and the first array corresponds
+ * to the morning bookings, while the second array corresponds to the evenings.
+ */
+export async function getUserIdsNeedingConfirmation({dateString}) {
+    const today = parseISO(dateString);
+    const [allBookings] = await pool.query(`
+    SELECT *
+    FROM booking
+    WHERE date = ?;
+    `, [today]);
+
+    const todaysDayOfWeek = getDay(today);
+    const [daysRows] = await pool.query('SELECT * FROM qcl.day WHERE day = ?', [todaysDayOfWeek]);
+    const { isHalfDay } = daysRows[0];
+
+    const numBoatsUnavailable = await getNumBoatsUnavailableByDate({today});
+    const boatsAvailableForDate = BOATS_AVAILABLE - Object.values(numBoatsUnavailable)[0];
+
+    if(isHalfDay) {
+        const { satisfied: morningBookings, unsatisfied: eveningBookings } = 
+            splitFilter({array: allBookings, condition: ({isMorningBooking}) => (isMorningBooking)
+        })
+        const { satisfied: morningConfirmed, unsatisfied: morningNeedsConfirmation } = 
+            splitFilter({array: morningBookings, condition: ({isConfirmed}) => (isConfirmed === null)
+        })
+        const { satisfied: eveningConfirmed, unsatisfied: eveningNeedsConfirmation } = 
+            splitFilter({array: eveningBookings, condition: ({isConfirmed}) => (isConfirmed === null)
+        })
+
+        return [
+            morningConfirmed.length >= boatsAvailableForDate ? [] : morningNeedsConfirmation.map(({userId}) => userId), 
+            eveningConfirmed.length >= boatsAvailableForDate ? [] : eveningNeedsConfirmation.map(({userId}) => userId),
+        ];
+    } else {
+        const { satisfied: confirmed, unsatisfied: needsConfirmation } = 
+            splitFilter({array: allBookings, condition: ({isConfirmed}) => (isConfirmed === null)});
+        return [
+            confirmed.length >= boatsAvailableForDate ? [] : needsConfirmation.map(({userId}) => userId)
+        ];
+    }
 }
 
 // #endregion

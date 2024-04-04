@@ -54,13 +54,14 @@ export const LogIn = (props: PaperProps) => {
     const onSubmitFunction = type === 'login' ? loginUser : registerUser;
     onSubmitFunction(form.values);
   };
+  console.log((loginFlags.error as { data: { error: string } })?.data?.error);
 
   return (
     <Paper radius="md" p="xl" withBorder {...props}>
       <Text size="lg" fw={500}>
         Welcome to QCL Staff Boat Booking
       </Text>
-      {loginFlags.isError ? <Text size="md" className={styles.loginFailed}>Log in failed. Please try again.</Text> : null}
+      {loginFlags.isError ? <Text size="md" className={styles.loginFailed}>{`Log in failed. ${loginFlags.error}`}</Text> : null}
       <Divider label={`Please ${type} below`} labelPosition="center" my="lg" />
       <form onSubmit={form.onSubmit(onSubmit)}>
         <Stack>

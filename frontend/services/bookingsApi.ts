@@ -1,6 +1,6 @@
 import { GetUserForBookingModel } from '@/models/user.model';
 import { apiSlice } from './apiSlice';
-import { GetUsersForBookingArg, PostBookingModel } from '@/models/booking.model';
+import { ConfirmBookingModel, GetBookingModel, GetUsersForBookingArg, PostBookingModel } from '@/models/booking.model';
 
 const bookingsApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -31,6 +31,30 @@ const bookingsApi = apiSlice.injectEndpoints({
         }),
         invalidatesTags: (_res, _err, { date }) => [{ type: 'UsersForBookingByDate', id: date }],
       }),
+      getMyBookingsNeedingConfirmation:
+        builder.query<GetBookingModel[], void>({
+        query: () => ({
+          url: 'bookings/confirmation',
+        }),
+        // This doesn't need an id, it will only ever call for today and can get a max of 2 return values (usually 1)
+        providesTags: () => [{ type: 'ConfirmationBookings' }],
+      }),
+      confirmMyBooking: builder.mutation<boolean, ConfirmBookingModel>({
+        query: (body) => ({
+            url: 'bookings/confirmation/confirm',
+            method: 'POST',
+            body,
+        }),
+        invalidatesTags: () => [{ type: 'ConfirmationBookings' }],
+      }),
+      unconfirmMyBooking: builder.mutation<boolean, ConfirmBookingModel>({
+        query: (body) => ({
+            url: 'bookings/confirmation/unconfirm',
+            method: 'POST',
+            body,
+        }),
+        invalidatesTags: () => [{ type: 'ConfirmationBookings' }],
+      }),
     }),
   });
 
@@ -38,4 +62,7 @@ const bookingsApi = apiSlice.injectEndpoints({
     useGetUsersForBookingQuery,
     usePostMyBookingMutation,
     useDeleteMyBookingMutation,
+    useGetMyBookingsNeedingConfirmationQuery,
+    useConfirmMyBookingMutation,
+    useUnconfirmMyBookingMutation,
   } = bookingsApi;

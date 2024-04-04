@@ -68,23 +68,26 @@ export const BookingCard = ({ date, isMorningBooking } : BookingCardType) => {
         { selectFromResult: ({ data, isSuccess, isFetching }) => {
             // index of myBooking. -1 if I don't have one
             const myBookingIndex = data?.findIndex(({ isMe }) => isMe) ?? -1;
-            // index of where I would fit. -1 if I already have a booking.
+            // index of where I would fit.
             const myPotentialIndex = data?.findIndex(
-                ({ points, isPriority }) => points > myPoints && !isPriority) ?? -1;
+                ({ points, isPriority }) => points > myPoints && !isPriority);
+            // adjust index to accomodate if I should be last
+            const adjustedMyPotentialIndex = myPotentialIndex === -1 ?
+                (data?.length ?? 0) : myPotentialIndex;
             return ({
                 totalOnWaitlist: data?.length ?? 0,
                 usersWithFewerPoints: data?.filter(
-                    ({ points, isPriority }) =>
-                        points <= myPoints && !isPriority
+                    ({ points, isPriority, isMe }) =>
+                        points <= myPoints && !isPriority && !isMe
                 ),
                 isSuccess,
                 isFetching,
                 // if I already have a booking, return the response. Otherwise, add a dummy row to show where I would fit.
                 orderedList: myBookingIndex > -1 ? data :
                     [
-                        ...data?.slice(0, myPotentialIndex) ?? [],
+                        ...data?.slice(0, adjustedMyPotentialIndex) ?? [],
                         myPotentialObject,
-                        ...data?.slice(myPotentialIndex, data.length - 1) ?? [],
+                        ...data?.slice(adjustedMyPotentialIndex, data.length) ?? [],
                     ],
                 hasCurrentUserBooked: myBookingIndex > -1,
             });
@@ -138,13 +141,10 @@ export const BookingCard = ({ date, isMorningBooking } : BookingCardType) => {
                             </Group>
                             <Group gap={0}>
                                 <Text size="md" fw={500}>
-                                    {hasCurrentUserBooked ?
-                                        Math.max(0, (usersWithFewerPoints?.length ?? 0) - 1)
-                                        : usersWithFewerPoints?.length ?? 0
-                                    }
+                                    {usersWithFewerPoints?.length ?? 0}
                                 </Text>
                                 <Text size="sm" c="gray">
-                                    &nbsp;{`${(usersWithFewerPoints?.length ?? 0) === 1 ? 'person' : 'people'} with lower priority`}
+                                    &nbsp;{`${(usersWithFewerPoints?.length ?? 0) === 1 ? 'is' : 'are'} higher priority`}
                                 </Text>
                             </Group>
                         </Stack>

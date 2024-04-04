@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBooking, deleteBooking, getUserById, getUsersForBookings } from '../database.js';
+import { confirmBooking, createBooking, deleteBooking, getBookingsNeedingConfirmation, getUserById, getUsersForBookings, unconfirmBooking } from '../database.js';
 import { keepAlive, validateToken } from '../JWT.js';
 
 const router = express.Router();
@@ -22,12 +22,33 @@ router.post("/", validateToken , async (req,res) => {
     res.status(201).send(bookingRes);
 });
 
-
 router.delete("/", validateToken , async (req,res) => {
     const userId = req.userId;
     const {date, isMorningBooking} = req.body;
     const deletionReturn = await deleteBooking({date, isMorningBooking, userId});
     res.status(201).send(deletionReturn);
+});
+
+router.get("/confirmation", validateToken, async (req, res) => {
+    const userId = req.userId;
+    const bookings = await getBookingsNeedingConfirmation({userId});
+    res.send(bookings);
+});
+
+router.post("/confirmation/confirm", validateToken , async (req,res) => {
+    const userId = req.userId;
+    const {bookingId} = req.body;
+
+    const confirmBookingRes = await confirmBooking({bookingId, userId});
+    res.status(201).send(confirmBookingRes);
+});
+
+router.post("/confirmation/unconfirm", validateToken , async (req,res) => {
+    const userId = req.userId;
+    const {bookingId} = req.body;
+
+    const unconfirmBookingRes = await unconfirmBooking({bookingId, userId});
+    res.status(201).send(unconfirmBookingRes);
 });
 
 export default router;
