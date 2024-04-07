@@ -18,7 +18,7 @@ const pool = mysql.createPool({
 const getUserColumnsString = 'userId, firstName, lastName, email, role, fishingLicence, points, pcoc';
 
 export async function getUsers() {
-    const [rows] = await pool.query(`SELECT ${getUserColumnsString} FROM qcl.user`);
+    const [rows] = await pool.query(`SELECT ${getUserColumnsString}, isConfirmed FROM qcl.user`);
     return rows;
 }
 
@@ -32,12 +32,20 @@ export async function getUserById(userId) {
     return rows[0];
 }
 
-export async function createUser({firstName, lastName, email, password, role, fishingLicence, pcoc, points}) {
+export async function createUser({firstName, lastName, email, password, role, fishingLicence, pcoc, isConfirmed, points}) {
     const [res] = await pool.query(`
-        INSERT INTO qcl.user (firstName, lastName, email, password, role, fishingLicence, pcoc, points)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [firstName, lastName, email, password, role, fishingLicence, pcoc, points]);
+        INSERT INTO qcl.user (firstName, lastName, email, password, role, fishingLicence, pcoc, isConfirmed, points)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `, [firstName, lastName, email, password, role, fishingLicence, pcoc, isConfirmed, points]);
     return getUserById(res.insertId);
+}
+
+// For now, we only care about patching isConfirmed and points on a user.
+export async function patchUser({isConfirmed, points, userId}) {
+    await pool.query(`
+        UPDATE qcl.user SET isConfirmed = IFNULL(?, isConfirmed), points = IFNULL(?, points) WHERE userId = ?;
+    `, [isConfirmed, points, userId]);
+    return true;
 }
 
 // #endregion
@@ -77,16 +85,13 @@ export async function getNumBoatsUnavailableByDate({date}) {
 // #region bookings
 
 // Return ordered list of all bookings, ordered such that isPriority is at the top, followed by lowests points, followed by earlier booking
-export async function getUsersForBookings({userId, date, isMorningBooking}) {
+export async function getUsersForBookings({date, isMorningBooking}) {
     const [rows] = await pool.query(
-        `SELECT u.points, u.firstName, u.lastName, b.isPriority, b.timeBooked,
-        CASE 
-            WHEN u.userId = ? THEN 1 ELSE 0
-        END AS isMe
+        `SELECT u.points, u.firstName, u.lastName, b.isPriority, b.timeBooked, u.userId
         FROM user AS u JOIN booking AS b ON u.userId = b.userId 
         WHERE b.date = ? AND b.isMorningBooking IS ? 
         ORDER BY b.isPriority DESC, u.points, b.timeBooked ASC;`, 
-        [userId, date, isMorningBooking]
+        [date, isMorningBooking]
     );
     return rows;
 }
@@ -116,8 +121,8 @@ export async function createBooking({date, isMorningBooking, userPoints, isPrior
                         WHERE b.date = ? AND b.isMorningBooking IS ? AND 
                         ( (u.points <= ? AND b.isPriority >= ?) OR b.isPriority > ?)
                 ) < ${boatsAvailableForDate} THEN NULL else 0 END, 
-        ?, NOW(), ?);
-    `, [date, isMorningBooking, date, isMorningBooking, userPoints, isPriority, isPriority, userId, isPriority]);
+        ?, NOW(), ?) ON DUPLICATE KEY UPDATE isPriority = ?;
+    `, [date, isMorningBooking, date, isMorningBooking, userPoints, isPriority, isPriority, userId, isPriority, isPriority]);
 
 
     return updateBookingIsConfirmedAfterInsertion({date, isMorningBooking, boatsAvailableForDate});

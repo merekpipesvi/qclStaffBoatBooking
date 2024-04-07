@@ -2,10 +2,18 @@ import { eachDayOfInterval, getDay, parseISO } from 'date-fns';
 import { Group } from '@mantine/core';
 import { useGetDaysQuery } from '@/services/daysApi';
 import { useGetStartEndDate } from './useGetStartEndDate';
-import { BookingCard } from '../BookingCard/BookingCard';
+import { BookingCard, BookingCardUser } from '../BookingCard/BookingCard';
 import styles from './BookingList.module.css';
 
-export const BookingList = () => {
+export const BookingList = ({
+    adminStartDateString,
+    adminEndDateString,
+    user,
+} : {
+    adminStartDateString?: string;
+    adminEndDateString?: string;
+    user?: BookingCardUser;
+} = {}) => {
     const { startDateString, endDateString } = useGetStartEndDate();
     const { allDates } = useGetDaysQuery(
         undefined,
@@ -14,7 +22,10 @@ export const BookingList = () => {
                 return {};
             }
             const datesArr = eachDayOfInterval(
-                { start: parseISO(startDateString), end: parseISO(endDateString) }
+                {
+                    start: parseISO(adminStartDateString ?? startDateString),
+                    end: parseISO(adminEndDateString ?? endDateString),
+                }
             );
                 return (
                     { allDates: datesArr.map(
@@ -29,9 +40,9 @@ export const BookingList = () => {
             <Group gap="4rem">
                 {allDates?.map(({ date, isHalfDay }) =>
                     isHalfDay ?
-                    [<BookingCard date={date} isMorningBooking />,
-                        <BookingCard date={date} isMorningBooking={false} />]
-                    : <BookingCard date={date} />
+                    [<BookingCard date={date} isMorningBooking user={user} />,
+                        <BookingCard date={date} isMorningBooking={false} user={user} />]
+                    : <BookingCard date={date} user={user} />
                 ).flat()}
             </Group>
         </div>

@@ -1,6 +1,6 @@
 import { GetUserForBookingModel } from '@/models/user.model';
 import { apiSlice } from './apiSlice';
-import { ConfirmBookingModel, GetBookingModel, GetUsersForBookingArg, PostBookingModel } from '@/models/booking.model';
+import { ConfirmBookingModel, GetBookingModel, GetUsersForBookingArg, PostBookingModel, PostPriorityBookingModel } from '@/models/booking.model';
 
 const bookingsApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -18,6 +18,14 @@ const bookingsApi = apiSlice.injectEndpoints({
       postMyBooking: builder.mutation<boolean, PostBookingModel>({
         query: (body) => ({
             url: 'bookings',
+            method: 'POST',
+            body,
+        }),
+        invalidatesTags: (_res, _err, { date }) => [{ type: 'UsersForBookingByDate', id: date }],
+      }),
+      postPriorityBooking: builder.mutation<boolean, PostPriorityBookingModel>({
+        query: (body) => ({
+            url: 'bookings/priority',
             method: 'POST',
             body,
         }),
@@ -65,4 +73,5 @@ const bookingsApi = apiSlice.injectEndpoints({
     useGetMyBookingsNeedingConfirmationQuery,
     useConfirmMyBookingMutation,
     useUnconfirmMyBookingMutation,
+    usePostPriorityBookingMutation,
   } = bookingsApi;

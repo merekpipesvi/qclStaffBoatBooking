@@ -12,9 +12,9 @@ type UserModel = {
     pcoc?: string;
 };
 
-// Used in select queries as an add on column
-type IsMe = {
-    isMe: boolean;
+// We don't need to send this for most use cases
+type IsConfirmed = {
+    isConfirmed: boolean;
 };
 
 export type GetUserModel = Omit<UserModel, 'password'>;
@@ -23,4 +23,7 @@ export type PostUserModel = Omit<UserModel, 'userId' | 'role' | 'points'>;
 
 export type PostLogInModel = Pick<UserModel, 'email' | 'password'>;
 
-export type GetUserForBookingModel = Pick<UserModel, 'firstName' | 'lastName' | 'points'> & Pick<GetBookingModel, 'isPriority' | 'timeBooked'> & IsMe;
+export type GetUserForBookingModel = Pick<UserModel, 'firstName' | 'lastName' | 'points' | 'userId'> & Pick<GetBookingModel, 'isPriority' | 'timeBooked'>;
+
+export type GetUserAdminModel = UserModel & IsConfirmed;
+export type PatchUserAdminModel = { userId: GetUserAdminModel['userId']; points?: GetUserAdminModel['points']; isConfirmed?: GetUserAdminModel['isConfirmed']; };

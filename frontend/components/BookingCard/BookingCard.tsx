@@ -1,18 +1,25 @@
 import { Button, ButtonProps, Flex, Group, Modal, Paper, Stack, Text } from '@mantine/core';
 import { format } from 'date-fns';
-import { useDisclosure } from '@mantine/hooks';
+import { upperFirst, useDisclosure } from '@mantine/hooks';
 import React from 'react';
 import { ISO_DATE_FORMAT, NUM_BOATS, STRING_DATE_FORMAT } from '@/utils/constants';
-import { useDeleteMyBookingMutation, useGetUsersForBookingQuery, usePostMyBookingMutation } from '@/services/bookingsApi';
+import { useDeleteMyBookingMutation, useGetUsersForBookingQuery, usePostMyBookingMutation, usePostPriorityBookingMutation } from '@/services/bookingsApi';
 import { useAppSelector } from '@/utils/reduxHooks';
 import { selectCurrentUser } from '@/state/authSelectors';
 import { WeatherIcon } from '../WeatherIcon/WeatherIcon';
 import styles from './BookingCard.module.css';
-import { GetUserForBookingModel } from '@/models/user.model';
+import { GetUserForBookingModel, GetUserModel } from '@/models/user.model';
 import { BookingTable } from '../BookingTable/BookingTable';
 import { useGetBoatsUnavailableQuery } from '@/services/boatsApi';
 
-type BookingCardType = { date: Date; isMorningBooking?: boolean };
+export type BookingCardUser = Pick<GetUserModel, 'userId' | 'points' | 'firstName' | 'lastName'>;
+
+type BookingCardType = {
+    date: Date;
+    isMorningBooking?: boolean,
+    // User should only be provided if the card is being used from an admin's perspective
+    user?: BookingCardUser,
+};
 
 const ModalTitle = ({ date, isMorningBooking } : BookingCardType) => {
     const { data } = useGetBoatsUnavailableQuery();
@@ -35,25 +42,30 @@ const ModalTitle = ({ date, isMorningBooking } : BookingCardType) => {
     );
 };
 
-export const BookingCard = ({ date, isMorningBooking } : BookingCardType) => {
+export const BookingCard = ({ date, isMorningBooking, user } : BookingCardType) => {
     const dateString = format(date, STRING_DATE_FORMAT);
     const ISODateString = format(date, ISO_DATE_FORMAT);
     const [createBooking, { status: createBookingStatus }] = usePostMyBookingMutation();
+    const [createPriorityBooking, { status: createPriorityBookingStatus }] =
+        usePostPriorityBookingMutation();
     const [deleteMyBooking, { status: deleteBookingStatus }] = useDeleteMyBookingMutation();
 
     const {
         points: myPoints,
         firstName: myFirstName,
         lastName: myLastName,
+        userId: myUserId,
     } = useAppSelector(selectCurrentUser)!;
 
+    const viewingUserId = user?.userId ?? myUserId;
+
     const myPotentialObject: GetUserForBookingModel = {
-        firstName: myFirstName,
-        lastName: myLastName,
-        points: myPoints,
-        isPriority: false,
+        firstName: user === undefined ? myFirstName : user.firstName,
+        lastName: user === undefined ? myLastName : user.lastName,
+        points: user === undefined ? myPoints : user.points,
+        isPriority: user !== undefined,
         timeBooked: new Date(),
-        isMe: true,
+        userId: viewingUserId,
     };
 
     const {
@@ -67,18 +79,29 @@ export const BookingCard = ({ date, isMorningBooking } : BookingCardType) => {
         { date: ISODateString, isMorningBooking },
         { selectFromResult: ({ data, isSuccess, isFetching }) => {
             // index of myBooking. -1 if I don't have one
-            const myBookingIndex = data?.findIndex(({ isMe }) => isMe) ?? -1;
-            // index of where I would fit.
+            const myBookingIndex = data?.findIndex(({ userId }) => userId === viewingUserId) ?? -1;
+            // index of where booking would fit.
             const myPotentialIndex = data?.findIndex(
-                ({ points, isPriority }) => points > myPoints && !isPriority);
-            // adjust index to accomodate if I should be last
+                ({ points, isPriority }) =>
+                    /**
+                     * We want to find the first element that the potential booking would be above.
+                     *
+                     * If user is defined (therefore it's admin and a priority booking)
+                     * and the booking is not priority, return true to get that index.
+                     *
+                     * If the user is not defined, we would not be booking with priorty
+                     * and want to find the first non-priority booking with higher points
+                     * than me.
+                     */
+                    !isPriority && user !== undefined ? true : points > myPoints && !isPriority);
+            // adjust index to accomodate if booking should be last
             const adjustedMyPotentialIndex = myPotentialIndex === -1 ?
                 (data?.length ?? 0) : myPotentialIndex;
             return ({
                 totalOnWaitlist: data?.length ?? 0,
                 usersWithFewerPoints: data?.filter(
-                    ({ points, isPriority, isMe }) =>
-                        points <= myPoints && !isPriority && !isMe
+                    ({ points, isPriority, userId }) =>
+                        points <= myPoints && !isPriority && !(userId === viewingUserId)
                 ),
                 isSuccess,
                 isFetching,
@@ -152,14 +175,24 @@ export const BookingCard = ({ date, isMorningBooking } : BookingCardType) => {
                 </Flex>
             </Paper>
             <Modal opened={opened} onClose={close} title={<ModalTitle isMorningBooking={isMorningBooking} date={date} />} size="auto" yOffset="15rem">
-                <BookingTable data={orderedList} hasCurrentUserBooked={hasCurrentUserBooked} />
+                <BookingTable
+                  data={orderedList}
+                  hasCurrentUserBooked={hasCurrentUserBooked}
+                  user={user}
+                />
                 <Group justify="flex-end" p="2rem 1rem 0.25rem 0">
                     <Button onClick={close} variant="default">
                         Cancel
                     </Button>
                     <Button
                       onClick={async () => {
-                        if (hasCurrentUserBooked) {
+                        if (user !== undefined) {
+                            await createPriorityBooking({
+                                date: ISODateString,
+                                isMorningBooking,
+                                userId: user.userId,
+                            });
+                        } else if (hasCurrentUserBooked) {
                             await deleteMyBooking({
                                 date: ISODateString,
                                 isMorningBooking,
@@ -173,9 +206,14 @@ export const BookingCard = ({ date, isMorningBooking } : BookingCardType) => {
                         close();
                       }
                     }
-                      disabled={isGetUserFetching || createBookingStatus === 'pending' || deleteBookingStatus === 'pending'}
+                      disabled={
+                        isGetUserFetching ||
+                        createBookingStatus === 'pending' ||
+                        deleteBookingStatus === 'pending' ||
+                        createPriorityBookingStatus === 'pending'
+                    }
                     >
-                        {hasCurrentUserBooked ? 'Remove me' : 'Sign up'}
+                        {user !== undefined ? `Give ${upperFirst(user.firstName)} priority` : hasCurrentUserBooked ? 'Remove booking' : 'Sign up'}
                     </Button>
                 </Group>
             </Modal>

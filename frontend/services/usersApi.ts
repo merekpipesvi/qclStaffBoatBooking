@@ -1,12 +1,21 @@
-import { GetUserModel } from '@/models/user.model';
+import { GetUserAdminModel, PatchUserAdminModel } from '@/models/user.model';
 import { apiSlice } from './apiSlice';
 
 const usersApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        getUsers: builder.query<GetUserModel[], void>({
+        getUsersForAdmin: builder.query<GetUserAdminModel[], void>({
             query: () => 'users',
+            providesTags: () => [{ type: 'AdminUsers' }],
+        }),
+        patchUserForAdmin: builder.mutation<void, PatchUserAdminModel>({
+            query: (user) => ({
+              url: `/users/${user.userId}`,
+              method: 'PATCH',
+              body: user,
+            }),
+            invalidatesTags: () => [{ type: 'AdminUsers' }],
         }),
     }),
 });
 
-export const { useGetUsersQuery } = usersApi;
+export const { useGetUsersForAdminQuery, usePatchUserForAdminMutation } = usersApi;

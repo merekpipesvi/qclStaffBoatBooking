@@ -1,6 +1,7 @@
 import express from 'express';
 import { confirmBooking, createBooking, deleteBooking, getBookingsNeedingConfirmation, getUserById, getUsersForBookings, unconfirmBooking } from '../database.js';
 import { keepAlive, validateToken } from '../JWT.js';
+import { adminOnly } from '../middleware.js';
 
 const router = express.Router();
 router.use(validateToken);
@@ -8,8 +9,7 @@ router.use(keepAlive);
 
 router.get("/", async (req, res) => {
     const { isMorningBooking, date } = req.query;
-    const userId = req.userId;
-    const users = await getUsersForBookings({userId, date, isMorningBooking: isMorningBooking === 'null' ? null : isMorningBooking === 'true'});
+    const users = await getUsersForBookings({date, isMorningBooking: isMorningBooking === 'null' ? null : isMorningBooking === 'true'});
     res.send(users);
 });
 
@@ -19,6 +19,14 @@ router.post("/", validateToken , async (req,res) => {
     const user = await getUserById(userId);
     const {date, isMorningBooking} = req.body;
     const bookingRes = await createBooking({date, isMorningBooking, userPoints: user.points, isPriority: 0, userId});
+    res.status(201).send(bookingRes);
+});
+
+// Post model specifically for admins booking priority
+router.post("/priority", validateToken, adminOnly, async (req,res) => {
+    const {userId, date, isMorningBooking} = req.body;
+    const user = await getUserById(userId);
+    const bookingRes = await createBooking({date, isMorningBooking, userPoints: user.points, isPriority: 1, userId});
     res.status(201).send(bookingRes);
 });
 

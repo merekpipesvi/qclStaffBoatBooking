@@ -8,8 +8,10 @@ export const useGetStartEndDate = () => {
     const startDateString = (router.query[START_URL_ARG] ?? '') as string;
     const endDateString = (router.query[END_URL_ARG] ?? '') as string;
     const currentUser = useAppSelector(selectCurrentUser);
-    if (currentUser !== undefined && (startDateString === '' || endDateString === '')) {
-        router.push('/booking'); // if the URL changes and one isn't defined, push back to booking selection page
+    if (currentUser !== undefined && (startDateString === '' || endDateString === '') && router.route !== '/admin') {
+         // if the URL changes and dates or user arent defined, push back to booking selection page
+         // admin page bypasses this, so we don't need to worry about it on admin page.
+        router.push('/booking');
     }
     return ({ startDateString, endDateString });
 };
