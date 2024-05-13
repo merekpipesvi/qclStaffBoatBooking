@@ -18,7 +18,7 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
     const extendSession = async () => {
       const now = Date.now();
       const hasFiveMinutesPast = differenceInMinutes(now, lastExtension) > 5;
-      if ((hasFiveMinutesPast && !isOnLoginPage && !isExtending) || currentUser === undefined) {
+      if (!isOnLoginPage && ((hasFiveMinutesPast && !isExtending) || currentUser === undefined)) {
         /**
          * If we haven't extended the session in more than 5 minutes,
          * we should try call extend session to verify there is a session.

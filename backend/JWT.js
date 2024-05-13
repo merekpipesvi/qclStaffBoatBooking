@@ -7,6 +7,7 @@ export const validateToken = (req, res, next) => {
     const accessToken = req.cookies[COOKIE_NAME];
 
     if (!accessToken) {
+        console.log(accessToken)
         return res.status(400).json({ error: "User not authenticated :("});
     } else {
         try {
