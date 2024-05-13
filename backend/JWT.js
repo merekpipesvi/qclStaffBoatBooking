@@ -5,9 +5,8 @@ export const createTokens = (user) => (jwt.sign({userId: user.userId, role: user
 
 export const validateToken = (req, res, next) => {
     const accessToken = req.cookies[COOKIE_NAME];
-
+    console.log(req)
     if (!accessToken) {
-        console.log(accessToken)
         return res.status(400).json({ error: "User not authenticated :("});
     } else {
         try {
@@ -25,7 +24,6 @@ export const validateToken = (req, res, next) => {
 }
 
 export const keepAlive = (req, res, next) => {
-    console.log(req)
     const accessToken = req.cookies[COOKIE_NAME];
     if (!accessToken) {
         return res.status(400).json({ error: "User not authenticated :("});
