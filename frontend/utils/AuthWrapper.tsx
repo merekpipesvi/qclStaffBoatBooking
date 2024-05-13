@@ -8,8 +8,9 @@ import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner';
 export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const isOnLoginPage = router.route === '/';
-  const { data: currentUser } = useGetMeQuery(undefined, { skip: isOnLoginPage });
-  const { isLoading: isExtending, refetch } =
+  const { data: currentUser, refetch: refetchMe } =
+    useGetMeQuery(undefined, { skip: isOnLoginPage });
+  const { isLoading: isExtending, refetch: refetchExtend } =
     useExtendSessionQuery(isOnLoginPage ? skipToken : undefined);
   const [lastExtension, setLastExtension] = React.useState(Date.now());
 
@@ -22,12 +23,13 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
          * If we haven't extended the session in more than 5 minutes,
          * we should try call extend session to verify there is a session.
          */
-        try {
-          await refetch();
-          setLastExtension(now);
-        } catch {
-          router.push('/');
-        }
+          const { isError } = await refetchExtend();
+          if (isError) {
+            await refetchMe();
+            router.push('/');
+          } else {
+            setLastExtension(now);
+          }
       }
     };
     window.addEventListener('click', extendSession);

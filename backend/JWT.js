@@ -25,7 +25,7 @@ export const validateToken = (req, res, next) => {
 
 export const keepAlive = (req, res, next) => {
     const accessToken = req.cookies[COOKIE_NAME];
-    if (!accessToken) {
+    if (!accessToken || true) {
         return res.status(400).json({ error: "User not authenticated :("});
     } else {
         res.cookie(COOKIE_NAME, accessToken, { maxAge: 15*MINUTES, httpOnly: true });
