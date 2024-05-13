@@ -29,7 +29,7 @@ router.post('/login', async (req, res) => {
         res.status(401).json("This account needs admin confirmation.");
     } else {
         const accessToken = createTokens(user);
-        res.cookie(COOKIE_NAME, accessToken, { maxAge: 15*MINUTES, httpOnly: true });
+        res.cookie(COOKIE_NAME, accessToken, { maxAge: 15*MINUTES, httpOnly: true, sameSite: 'none' });
         res.json("Successful login");
     }
 });
