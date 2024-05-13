@@ -35,7 +35,6 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/me', validateToken, async (req, res) => {
-    console.log('hit')
     const currentUser = await getUserById(req.userId);
     res.json(currentUser);
 });
