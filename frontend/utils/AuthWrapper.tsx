@@ -9,7 +9,7 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const isOnLoginPage = router.route === '/';
   const { data: currentUser, refetch: refetchMe } =
-    useGetMeQuery(undefined, { skip: isOnLoginPage });
+    useGetMeQuery(undefined, { skip: isOnLoginPage && false }); // TODO delete the false
   const { isLoading: isExtending, refetch: refetchExtend } =
     useExtendSessionQuery(isOnLoginPage ? skipToken : undefined);
   const [lastExtension, setLastExtension] = React.useState(Date.now());
