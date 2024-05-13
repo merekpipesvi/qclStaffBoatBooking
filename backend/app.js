@@ -23,8 +23,8 @@ app.use(`${API_BASE}/halfDays`, daysRouter);
 app.use(`${API_BASE}/bookings`, bookingsRouter);
 app.use(`${API_BASE}/boats`, boatsRouter);
 
-app.listen(8080, () => {
-    console.log('Server running on port 8080');
+app.listen(8800, () => {
+    console.log('Server running on port 8800');
 });
 
 
