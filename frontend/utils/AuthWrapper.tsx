@@ -1,27 +1,40 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import { useGetMeQuery } from '@/services/authApi';
+import { differenceInMinutes } from 'date-fns';
+import { skipToken } from '@reduxjs/toolkit/query';
+import { useExtendSessionQuery, useGetMeQuery } from '@/services/authApi';
 import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner';
 
 export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const isOnLoginPage = router.route === '/';
-  const { data: currentUser, isFetching, isUninitialized } =
-    useGetMeQuery(undefined, { skip: isOnLoginPage });
-  const [shouldRenderChildren, setShouldRenderChildren] = React.useState(false);
+  const { data: currentUser } = useGetMeQuery(undefined, { skip: isOnLoginPage });
+  const { isLoading: isExtending, refetch } =
+    useExtendSessionQuery(isOnLoginPage ? skipToken : undefined);
+  const [lastExtension, setLastExtension] = React.useState(Date.now());
 
   React.useEffect(() => {
-    if (!isFetching && !isUninitialized && currentUser === undefined && !isOnLoginPage) {
+    const extendSession = async () => {
+      const now = Date.now();
+      const hasFiveMinutesPast = differenceInMinutes(now, lastExtension) > 5;
+      if ((hasFiveMinutesPast && !isOnLoginPage && !isExtending) || currentUser === undefined) {
         /**
-         * If we're done fetching, and the current user is still undefined, and we're not on login page,
-         * we should route back to the login page. This is because the user likely hasn't been authorized.
+         * If we haven't extended the session in more than 5 minutes,
+         * we should try call extend session to verify there is a session.
          */
-        router.push('/');
-    } else {
-        // Otherwise, show the page!
-        setShouldRenderChildren(true);
-    }
-  }, [isFetching, currentUser, router.route]);
+        try {
+          await refetch();
+          setLastExtension(now);
+        } catch {
+          router.push('/');
+        }
+      }
+    };
+    window.addEventListener('click', extendSession);
+    return () => {
+      window.removeEventListener('click', extendSession);
+    };
+  }, [router.route, currentUser]);
 
-  return (shouldRenderChildren ? children : <LoadingSpinner />);
+  return (currentUser !== undefined || isOnLoginPage ? children : <LoadingSpinner />);
 };

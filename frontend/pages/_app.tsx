@@ -6,6 +6,7 @@ import Head from 'next/head';
 import { MantineProvider } from '@mantine/core';
 import { Provider } from 'react-redux';
 import { config } from '@fortawesome/fontawesome-svg-core';
+import React from 'react';
 import { theme } from '../theme';
 import '../styles/global.css';
 import { Header } from '@/components/Header/Header';
@@ -18,6 +19,10 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 
 export default function App({ Component, pageProps }: AppProps) {
+  React.useEffect(() => {
+
+  });
+
   return (
     <Provider store={store}>
       <MantineProvider theme={theme}>

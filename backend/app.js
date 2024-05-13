@@ -19,7 +19,7 @@ app.use((err, _req, res, _next) => {
 });
 app.use(`${API_BASE}/users`, userRouter);
 app.use(`${API_BASE}/auth`, authRouter);
-app.use(`${API_BASE}/days`, daysRouter);
+app.use(`${API_BASE}/halfDays`, daysRouter);
 app.use(`${API_BASE}/bookings`, bookingsRouter);
 app.use(`${API_BASE}/boats`, boatsRouter);
 

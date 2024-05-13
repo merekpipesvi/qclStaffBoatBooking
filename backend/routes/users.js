@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserById, getUsers, createUser, patchUser } from '../database.js';
+import { getUserById, getUsers, createUser, patchUser, deleteUser } from '../database.js';
 import { validateToken } from '../JWT.js';
 import { adminOnly } from '../middleware.js';
 
@@ -17,10 +17,16 @@ router.get("/:userId", async (req, res) => {
     res.send(user);
 })
 
+// TODO: Does this use userId somehow??
 router.patch("/:userId", async (req, res) => {
     const {isConfirmed = null, points = null, userId} = req.body;
     const result = await patchUser({isConfirmed, points, userId});
     res.send(result);
+})
+
+router.delete("/:userId", async (req, res) => {
+    const deleteReturn = await deleteUser({userId: req.params.userId})
+    res.send(deleteReturn);
 })
 
 // TODO: Not needed at this point...

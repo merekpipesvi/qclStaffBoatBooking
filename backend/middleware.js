@@ -1,4 +1,6 @@
-
+/**
+ * Only allow admins to access these endpoints.
+ */
 export const adminOnly = (req, res, next) => {
     if (req.role === 'admin') {
         next();

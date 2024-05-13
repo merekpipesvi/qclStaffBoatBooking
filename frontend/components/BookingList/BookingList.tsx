@@ -1,9 +1,11 @@
-import { eachDayOfInterval, getDay, parseISO } from 'date-fns';
+import { eachDayOfInterval, format, parseISO } from 'date-fns';
 import { Group } from '@mantine/core';
-import { useGetDaysQuery } from '@/services/daysApi';
+import { skipToken } from '@reduxjs/toolkit/query';
+import { useGetHalfDaysQuery } from '@/services/halfDaysApi';
 import { useGetStartEndDate } from './useGetStartEndDate';
 import { BookingCard, BookingCardUser } from '../BookingCard/BookingCard';
 import styles from './BookingList.module.css';
+import { ISO_DATE_FORMAT } from '@/utils/constants';
 
 export const BookingList = ({
     adminStartDateString,
@@ -15,8 +17,8 @@ export const BookingList = ({
     user?: BookingCardUser;
 } = {}) => {
     const { startDateString, endDateString } = useGetStartEndDate();
-    const { allDates } = useGetDaysQuery(
-        undefined,
+    const { allDates } = useGetHalfDaysQuery(
+        endDateString === '' ? skipToken : { endDate: endDateString },
         { selectFromResult: ({ data }) => {
             if (data === undefined) {
                 return {};
@@ -27,9 +29,13 @@ export const BookingList = ({
                     end: parseISO(adminEndDateString ?? endDateString),
                 }
             );
+
+            const halfDaysSet = new Set(data);
                 return (
                     { allDates: datesArr.map(
-                        (date) => ({ date, isHalfDay: data[getDay(date)].isHalfDay === 1 })),
+                        (date) => (
+                            { date, isHalfDay: halfDaysSet.has(format(date, ISO_DATE_FORMAT)) }
+                        )),
                     }
                 );
             } }
@@ -38,11 +44,11 @@ export const BookingList = ({
     return (
         <div className={styles.container}>
             <Group gap="4rem">
-                {allDates?.map(({ date, isHalfDay }) =>
+                {allDates?.map(({ date, isHalfDay }, index) =>
                     isHalfDay ?
-                    [<BookingCard date={date} isMorningBooking user={user} />,
-                        <BookingCard date={date} isMorningBooking={false} user={user} />]
-                    : <BookingCard date={date} user={user} />
+                    [<BookingCard date={date} isMorningBooking user={user} key={`${index}-morning`} />,
+                        <BookingCard date={date} isMorningBooking={false} user={user} key={`${index}-evening`} />]
+                    : <BookingCard date={date} user={user} key={index} />
                 ).flat()}
             </Group>
         </div>

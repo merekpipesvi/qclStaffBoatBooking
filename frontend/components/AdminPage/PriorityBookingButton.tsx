@@ -19,7 +19,7 @@ export const PriorityBookingButton = (user : BookingCardUser) => {
     return (
         <>
             <Button radius="lg" onClick={open}>
-                Give Priority
+                Edit bookings
             </Button>
             <Modal
               onClose={close}

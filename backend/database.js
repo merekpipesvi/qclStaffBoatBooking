@@ -48,13 +48,48 @@ export async function patchUser({isConfirmed, points, userId}) {
     return true;
 }
 
+// For now, we only care about patching isConfirmed and points on a user.
+export async function deleteUser({userId}) {
+    await pool.query(`
+        DELETE FROM qcl.user WHERE userId = ?;
+    `, [userId]);
+    return true;
+}
+
 // #endregion
 
 // #region days of the week
 
-export async function getDaysOfWeek() {
-    const [rows] = await pool.query('SELECT * FROM qcl.day');
+export async function getHalfDays({endDate}) {
+    const [rows] = await pool.query(`SELECT * FROM qcl.halfDay
+    WHERE date > CURDATE() AND date < ?`, [endDate]);
     return rows;
+}
+
+/**
+ * Check a week in the future to see which days are half days. 
+ * Really hacky, but this is only for the admin page. Assumes NUM_DAYS_BOOKABLE is less than 2 weeks.
+ */
+export async function getFutureHalfDays() {
+    const [rows] = await pool.query(`SELECT * FROM qcl.halfDay
+    WHERE date > DATE_ADD(CURDATE(), INTERVAL 14 DAY) AND date < DATE_ADD(CURDATE(), INTERVAL 21 DAY)`);
+    return rows;
+}
+
+export async function isHalfDay({date}) {
+    const [rows] = await pool.query('SELECT isHalfDay FROM qcl.day WHERE date = ?', [date]);
+    return rows[0] != null;
+}
+
+export async function setDaysHalfDay({dateStringArr}) {
+    const values = dateStringArr.map((dateString) => [dateString]);
+    await pool.query(`INSERT IGNORE INTO halfDay(date) VALUES ?`, [values]);
+    return true;
+}
+
+export async function setDaysFullDay({dateStringArr}) {
+    await pool.query(`DELETE FROM halfDay WHERE date IN (?)`, [dateStringArr]);
+    return true;
 }
 
 // #endregion
@@ -73,10 +108,37 @@ export async function getBoatsUnavailableDates({startDate, endDate}) {
 
 export async function getNumBoatsUnavailableByDate({date}) {
     const [count] = await pool.query(
-        `SELECT COUNT(*) FROM boatunavailable WHERE dateUnavailable = ?;`,
+        `SELECT COUNT(*) FROM boatUnavailable WHERE dateUnavailable = ?;`,
         [date]
     );
     return count[0];
+}
+
+export async function createBoatUnavailable({boatId, date}) {
+    await pool.query(
+        `INSERT IGNORE INTO boatUnavailable (boatId, dateUnavailable)
+        VALUES (?, ?);`,
+        [boatId, date]
+    );
+    return true;
+}
+
+export async function deleteBoatUnavailable({boatId, date}) {
+    await pool.query(
+        `DELETE FROM boatUnavailable
+        WHERE boatId = ? AND dateUnavailable = ?;`,
+        [boatId, date]
+    );
+    return true;
+}
+
+export async function getDatesUnavailableByBoat({boatId}) {
+    const [rows] = await pool.query(
+        `SELECT dateUnavailable FROM boatUnavailable
+        WHERE boatId = ? AND dateUnavailable >= CURDATE();`,
+        [boatId]
+    );
+    return rows;
 }
 
 // #endregion
@@ -84,7 +146,7 @@ export async function getNumBoatsUnavailableByDate({date}) {
 
 // #region bookings
 
-// Return ordered list of all bookings, ordered such that isPriority is at the top, followed by lowests points, followed by earlier booking
+// Return ordered list of all bookings, ordered such that isPriority is at the top, followed by lowest points, followed by earlier booking
 export async function getUsersForBookings({date, isMorningBooking}) {
     const [rows] = await pool.query(
         `SELECT u.points, u.firstName, u.lastName, b.isPriority, b.timeBooked, u.userId
@@ -92,6 +154,17 @@ export async function getUsersForBookings({date, isMorningBooking}) {
         WHERE b.date = ? AND b.isMorningBooking IS ? 
         ORDER BY b.isPriority DESC, u.points, b.timeBooked ASC;`, 
         [date, isMorningBooking]
+    );
+    return rows;
+}
+
+export async function getBookingsForDayOfWeek({dayOfWeek}) {
+    const [rows] = await pool.query(
+        `SELECT b.bookingId, u.points, u.firstName, u.lastName, b.isPriority, b.date
+        FROM user AS u JOIN booking AS b ON u.userId = b.userId 
+        WHERE DAYOFWEEK(date) = ? AND date >= CURDATE() 
+        ORDER BY b.date, b.isPriority DESC, u.points, b.timeBooked ASC;`, 
+        [dayOfWeek]
     );
     return rows;
 }
@@ -125,7 +198,7 @@ export async function createBooking({date, isMorningBooking, userPoints, isPrior
     `, [date, isMorningBooking, date, isMorningBooking, userPoints, isPriority, isPriority, userId, isPriority, isPriority]);
 
 
-    return updateBookingIsConfirmedAfterInsertion({date, isMorningBooking, boatsAvailableForDate});
+    return await updateBookingIsConfirmedAfterInsertion({date, isMorningBooking, boatsAvailableForDate});
 }
 
 export async function deleteBooking({date, isMorningBooking, userId}) {
@@ -176,7 +249,7 @@ export async function unconfirmBooking({bookingId, userId}) {
  * If there are two arrays, the day is a half day, and the first array corresponds
  * to the morning bookings, while the second array corresponds to the evenings.
  */
-export async function getUserIdsNeedingConfirmation({dateString}) {
+export async function getUserIdsOfBookingsNeedingConfirmation({dateString}) {
     const today = parseISO(dateString);
     const [allBookings] = await pool.query(`
     SELECT *

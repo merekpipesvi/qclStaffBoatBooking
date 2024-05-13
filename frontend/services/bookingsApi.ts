@@ -44,7 +44,7 @@ const bookingsApi = apiSlice.injectEndpoints({
         query: () => ({
           url: 'bookings/confirmation',
         }),
-        // This doesn't need an id, it will only ever call for today and can get a max of 2 return values (usually 1)
+        // This doesn't need an id, it will only ever call for today and can get a max of 2 different types (for half day)
         providesTags: () => [{ type: 'ConfirmationBookings' }],
       }),
       confirmMyBooking: builder.mutation<boolean, ConfirmBookingModel>({

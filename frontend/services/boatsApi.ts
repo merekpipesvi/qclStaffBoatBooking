@@ -1,5 +1,5 @@
 import { addDays, format } from 'date-fns';
-import { GetBoatsUnavailableModel } from '@/models/boatUnavailable.model';
+import { ChangeBoatsUnavailableModel, GetBoatsUnavailableModel, GetDatesUnavailableByBoatApiArg, GetDatesUnavailableByBoatModel } from '@/models/boatUnavailable.model';
 import { apiSlice } from './apiSlice';
 import { ISO_DATE_FORMAT, NUM_DAYS_BOOKABLE } from '@/utils/constants';
 
@@ -14,7 +14,35 @@ const boatsApi = apiSlice.injectEndpoints({
                 },
             }),
         }),
+        deleteBoatUnavailable: builder.mutation<boolean, ChangeBoatsUnavailableModel>({
+            query: ({ boatId, dates }) => ({
+              url: `boats/${boatId}`,
+              method: 'DELETE',
+              body: { dates },
+            }),
+            invalidatesTags: (_res, _req, { boatId }) => [{ type: 'DatesByBoatId', id: boatId }],
+        }),
+        createBoatUnavailable: builder.mutation<boolean, ChangeBoatsUnavailableModel>({
+            query: ({ boatId, dates }) => ({
+              url: `boats/${boatId}`,
+              method: 'PUT',
+              body: { dates },
+            }),
+            invalidatesTags: (_res, _req, { boatId }) => [{ type: 'DatesByBoatId', id: boatId }],
+        }),
+        getDatesUnavailableByBoat:
+          builder.query<GetDatesUnavailableByBoatModel, GetDatesUnavailableByBoatApiArg>({
+            query: ({ boatId }) => ({
+                url: `boats/${boatId}`,
+            }),
+            providesTags: (_res, _req, { boatId }) => [{ type: 'DatesByBoatId', id: boatId }],
+        }),
     }),
 });
 
-export const { useGetBoatsUnavailableQuery } = boatsApi;
+export const {
+    useGetBoatsUnavailableQuery,
+    useDeleteBoatUnavailableMutation,
+    useCreateBoatUnavailableMutation,
+    useGetDatesUnavailableByBoatQuery,
+} = boatsApi;

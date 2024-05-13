@@ -213,7 +213,7 @@ export const BookingCard = ({ date, isMorningBooking, user } : BookingCardType) 
                         createPriorityBookingStatus === 'pending'
                     }
                     >
-                        {user !== undefined ? `Give ${upperFirst(user.firstName)} priority` : hasCurrentUserBooked ? 'Remove booking' : 'Sign up'}
+                        {hasCurrentUserBooked ? 'Remove booking' : `Sign up${user !== undefined ? ` ${upperFirst(user.firstName)} with priority` : ''}`}
                     </Button>
                 </Group>
             </Modal>

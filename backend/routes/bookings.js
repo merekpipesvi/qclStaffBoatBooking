@@ -1,5 +1,5 @@
 import express from 'express';
-import { confirmBooking, createBooking, deleteBooking, getBookingsNeedingConfirmation, getUserById, getUsersForBookings, unconfirmBooking } from '../database.js';
+import { confirmBooking, createBooking, deleteBooking, getBookingsForDayOfWeek, getBookingsNeedingConfirmation, getUserById, getUsersForBookings, unconfirmBooking } from '../database.js';
 import { keepAlive, validateToken } from '../JWT.js';
 import { adminOnly } from '../middleware.js';
 
@@ -57,6 +57,17 @@ router.post("/confirmation/unconfirm", validateToken , async (req,res) => {
 
     const unconfirmBookingRes = await unconfirmBooking({bookingId, userId});
     res.status(201).send(unconfirmBookingRes);
+});
+
+router.get("/bookingsByDay", async (req, res) => {
+    const { dayOfWeek } = req.query;
+    const dayOfWeekNum = Number(dayOfWeek);
+    if(isNaN(dayOfWeekNum) || ![0, 1, 2, 3, 4, 5, 6].some((dateFnDayOfWeek) => dateFnDayOfWeek === dayOfWeekNum)) {
+        res.status(400).send({message: "dayOfWeek should be a number between 0 (sunday) and 6 (saturday)"});
+    }
+    // date-fns uses 0 for Sunday, where MySQL uses 1.
+    const bookings = await getBookingsForDayOfWeek({dayOfWeek: dayOfWeekNum + 1});
+    res.send(bookings);
 });
 
 export default router;

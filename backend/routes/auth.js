@@ -1,7 +1,7 @@
 import { getUserForLogIn, createUser, getUserById } from '../database.js';
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { createTokens, validateToken } from '../JWT.js';
+import { createTokens, keepAlive, validateToken } from '../JWT.js';
 import { COOKIE_NAME, DEFAULT_USER_ROLE, HASH_ROUNDS, MINUTES } from '../constants.js';
 
 const router = express.Router();
@@ -38,5 +38,9 @@ router.get('/me', validateToken, async (req, res) => {
     const currentUser = await getUserById(req.userId);
     res.json(currentUser);
 });
+
+router.get('/extend', keepAlive, async (req,res) => {
+    res.json('Session extended');
+})
 
 export default router;

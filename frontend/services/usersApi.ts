@@ -15,7 +15,18 @@ const usersApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: () => [{ type: 'AdminUsers' }],
         }),
+        deleteUser: builder.mutation<void, Pick<GetUserAdminModel, 'userId'>>({
+            query: ({ userId }) => ({
+              url: `/users/${userId}`,
+              method: 'DELETE',
+            }),
+            invalidatesTags: () => [{ type: 'AdminUsers' }],
+        }),
     }),
 });
 
-export const { useGetUsersForAdminQuery, usePatchUserForAdminMutation } = usersApi;
+export const {
+    useGetUsersForAdminQuery,
+    usePatchUserForAdminMutation,
+    useDeleteUserMutation,
+} = usersApi;

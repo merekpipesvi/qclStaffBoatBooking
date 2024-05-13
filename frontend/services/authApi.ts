@@ -20,7 +20,15 @@ export const authApi = apiSlice.injectEndpoints({
         getMe: builder.query<GetUserModel, void>({
             query: () => 'auth/me',
         }),
+        extendSession: builder.query<string, void>({
+            query: () => 'auth/extend',
+        }),
     }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useGetMeQuery } = authApi;
+export const {
+    useRegisterMutation,
+    useLoginMutation,
+    useGetMeQuery,
+    useExtendSessionQuery,
+} = authApi;

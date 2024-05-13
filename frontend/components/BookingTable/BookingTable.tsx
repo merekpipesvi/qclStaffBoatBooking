@@ -61,7 +61,7 @@ export const BookingTable = ({ data, hasCurrentUserBooked, user }:
                   {`${rowNum + 1}.`}
               </Text>
             </Table.Td>
-            <Table.Td colSpan={3}>
+            <Table.Td colSpan={4}>
               <Text ta="center" fw={700} ml={-40}>
                   {`${upperFirst(user?.firstName ?? 'Your')} booking would fit here`}
               </Text>
