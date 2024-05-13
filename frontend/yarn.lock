@@ -2315,9 +2315,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/core@npm:7.6.2":
-  version: 7.6.2
-  resolution: "@mantine/core@npm:7.6.2"
+"@mantine/core@npm:^7.9.1":
+  version: 7.9.1
+  resolution: "@mantine/core@npm:7.9.1"
   dependencies:
     "@floating-ui/react": "npm:^0.26.9"
     clsx: "npm:2.1.0"
@@ -2326,10 +2326,10 @@ __metadata:
     react-textarea-autosize: "npm:8.5.3"
     type-fest: "npm:^4.12.0"
   peerDependencies:
-    "@mantine/hooks": 7.6.2
+    "@mantine/hooks": 7.9.1
     react: ^18.2.0
     react-dom: ^18.2.0
-  checksum: 10c0/c6e85ead73c8b825ed61761b48d6ecfd55cb53878e5505942ac81f15d4a4f20bc2c597b72fe7aebf1e0a752b1e1ae76fea1506db5c032d5717401e5769aeae1d
+  checksum: 10c0/6a84b59957375c20e462a5ef0b3bdf78a45398114d67bff6c9d26b715a4e9e3b4144eb2e41c7dc0a7a4543b1891334215b2cfffd7927a828726cff908838ba9e
   languageName: node
   linkType: hard
 
@@ -2348,24 +2348,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/form@npm:^7.6.2":
-  version: 7.6.2
-  resolution: "@mantine/form@npm:7.6.2"
+"@mantine/form@npm:^7.9.1":
+  version: 7.9.1
+  resolution: "@mantine/form@npm:7.9.1"
   dependencies:
     fast-deep-equal: "npm:^3.1.3"
     klona: "npm:^2.0.6"
   peerDependencies:
     react: ^18.2.0
-  checksum: 10c0/784bfefdcebe5df8b44fa2e0d0a6a7ea9b7085053b989ce688bbdbebb001304158de08b2938c52dc9ba0227fc43239345c024d6e0027cdc9f9edfae066d829f9
+  checksum: 10c0/1ff1a67f227044c37468a3ab6b22e8920254fe734e71720a73c136b6834cacd8af7ec7146b1f4608c74de399daab85d2625bc30c1a5d92f3e05591ef336ebbff
   languageName: node
   linkType: hard
 
-"@mantine/hooks@npm:7.6.2":
-  version: 7.6.2
-  resolution: "@mantine/hooks@npm:7.6.2"
+"@mantine/hooks@npm:^7.9.1":
+  version: 7.9.1
+  resolution: "@mantine/hooks@npm:7.9.1"
   peerDependencies:
     react: ^18.2.0
-  checksum: 10c0/95d2e33de0a7fa5dba0a579944e3846c5848b7c069a919e155cb25e712d0e47f1839a1edf7a9e63aa10ec22de2de41bd7f4cb631b5c2aebca0332e29b398947d
+  checksum: 10c0/048614a18836163000eee23a5993be6ece236ec42ca644eeea3890137de62b9b4a50270abfd55619388fe92f191bece3fb549c13edc73bb43388eb84c0b6db1f
   languageName: node
   linkType: hard
 
@@ -11180,10 +11180,10 @@ __metadata:
     "@fortawesome/free-regular-svg-icons": "npm:^6.5.1"
     "@fortawesome/free-solid-svg-icons": "npm:^6.5.1"
     "@fortawesome/react-fontawesome": "npm:^0.2.0"
-    "@mantine/core": "npm:7.6.2"
+    "@mantine/core": "npm:^7.9.1"
     "@mantine/dates": "npm:^7.9.1"
-    "@mantine/form": "npm:^7.6.2"
-    "@mantine/hooks": "npm:7.6.2"
+    "@mantine/form": "npm:^7.9.1"
+    "@mantine/hooks": "npm:^7.9.1"
     "@next/bundle-analyzer": "npm:^14.1.3"
     "@next/eslint-plugin-next": "npm:^14.1.3"
     "@reduxjs/toolkit": "npm:^2.2.1"
