@@ -7,6 +7,7 @@ export const Logo = (props : Omit<ImageProps, 'src'>) => {
         <Image 
             src="https://www.queencharlottelodge.com/wp-content/uploads/2016/09/qcl-haida-gwaii.png" 
             onClick={() => router.push('/booking')} 
+            style={{cursor: 'pointer'}}
             {...props} 
         />
     );
