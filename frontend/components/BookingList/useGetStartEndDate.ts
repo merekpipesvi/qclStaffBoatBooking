@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { END_URL_ARG, ISO_DATE_FORMAT, NUM_DAYS_BOOKABLE, START_URL_ARG } from '@/utils/constants';
 import { useAppSelector } from '@/utils/reduxHooks';
 import { selectCurrentUser } from '@/state/authSelectors';
-import { addDays, format, isWithinInterval, startOfToday } from 'date-fns';
+import { addDays, format, isWithinInterval, parseISO, startOfToday } from 'date-fns';
 
 export const useGetStartEndDate = () => {
     const router = useRouter();
@@ -16,12 +16,12 @@ export const useGetStartEndDate = () => {
     }
     const today = startOfToday();
     const lastDay = addDays(today, NUM_DAYS_BOOKABLE);
-    const startDateString = isWithinInterval(startDateStringFromURL, 
+    const startDateString = isWithinInterval(parseISO(startDateStringFromURL), 
             {start: today, end: lastDay}
         ) ? 
         startDateStringFromURL : 
         format(today, ISO_DATE_FORMAT);
-    const endDateString = isWithinInterval(endDateStringFromURL, 
+    const endDateString = isWithinInterval(parseISO(endDateStringFromURL), 
             {start: today, end: lastDay}
         ) ? 
         endDateStringFromURL : 
