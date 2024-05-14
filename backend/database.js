@@ -72,7 +72,7 @@ export async function getHalfDays({endDate}) {
  */
 export async function getFutureHalfDays() {
     const [rows] = await pool.query(`SELECT * FROM qcl.halfDay
-    WHERE date > DATE_ADD(CURDATE(), INTERVAL 14 DAY) AND date < DATE_ADD(CURDATE(), INTERVAL 21 DAY)`);
+    WHERE date > DATE_ADD(CURDATE(), INTERVAL 13 DAY) AND date < DATE_ADD(CURDATE(), INTERVAL 21 DAY)`);
     return rows;
 }
 
