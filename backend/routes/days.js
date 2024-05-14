@@ -16,8 +16,7 @@ router.get('/range/:endDate', async (req, res) => {
     res.json(days.map(({date}) => format(date, ISO_DATE_FORMAT)));
 });
 
-router.get('/future', async (req, res) => {
-    const endDate = req.params.endDate;
+router.get('/future', async (_req, res) => {
     const days = await getFutureHalfDays();
     res.json(days.map(({date}) => format(date, ISO_DATE_FORMAT)));
 })
