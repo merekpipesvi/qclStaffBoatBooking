@@ -31,6 +31,14 @@ const bookingsApi = apiSlice.injectEndpoints({
         }),
         invalidatesTags: (_res, _err, { date }) => [{ type: 'UsersForBookingByDate', id: date }],
       }),
+      deletePriorityBooking: builder.mutation<boolean, PostPriorityBookingModel>({
+        query: (body) => ({
+            url: 'bookings/priority',
+            method: 'DELETE',
+            body,
+        }),
+        invalidatesTags: (_res, _err, { date }) => [{ type: 'UsersForBookingByDate', id: date }],
+      }),
       deleteMyBooking: builder.mutation<boolean, PostBookingModel>({
         query: (body) => ({
             url: 'bookings',
@@ -74,4 +82,5 @@ const bookingsApi = apiSlice.injectEndpoints({
     useConfirmMyBookingMutation,
     useUnconfirmMyBookingMutation,
     usePostPriorityBookingMutation,
+    useDeletePriorityBookingMutation,
   } = bookingsApi;

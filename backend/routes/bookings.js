@@ -30,6 +30,13 @@ router.post("/priority", validateToken, adminOnly, async (req,res) => {
     res.status(201).send(bookingRes);
 });
 
+// delete model specifically for admins booking priority
+router.delete("/priority", validateToken, adminOnly, async (req,res) => {
+    const {userId, date, isMorningBooking} = req.body;
+    const deletionReturn = await deleteBooking({date, isMorningBooking, userId});
+    res.status(201).send(deletionReturn);
+});
+
 router.delete("/", validateToken , async (req,res) => {
     const userId = req.userId;
     const {date, isMorningBooking} = req.body;

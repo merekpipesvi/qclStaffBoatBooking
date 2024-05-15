@@ -3,6 +3,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { createTokens, keepAlive, validateToken } from '../JWT.js';
 import { COOKIE_NAME, DEFAULT_USER_ROLE, HASH_ROUNDS, MINUTES } from '../constants.js';
+import { isBefore } from 'date-fns';
 
 const router = express.Router();
 
@@ -10,7 +11,8 @@ router.post('/register', async (req, res) => {
     const { firstName, lastName, email, password, fishingLicence, pcoc } = req.body;
     try {
         const hashPassword = await bcrypt.hash(password, HASH_ROUNDS);
-        const createdUser = await createUser({ firstName, lastName, email, password: hashPassword, role: DEFAULT_USER_ROLE, fishingLicence, pcoc, isConfirmed: 0, points: 0 });
+        const shouldAutoConfirm = isBefore(new Date(), new Date('2024-06-01'));
+        const createdUser = await createUser({ firstName, lastName, email, password: hashPassword, role: DEFAULT_USER_ROLE, fishingLicence, pcoc, isConfirmed: shouldAutoConfirm ? 1 : 0, points: 0 });
         res.status(201).send(createdUser);
     } catch (error) {
         res.status(400).json({ error })

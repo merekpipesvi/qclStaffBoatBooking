@@ -35,7 +35,7 @@ export async function getUserById(userId) {
 export async function createUser({firstName, lastName, email, password, role, fishingLicence, pcoc, isConfirmed, points}) {
     const [res] = await pool.query(`
         INSERT INTO qcl.user (firstName, lastName, email, password, role, fishingLicence, pcoc, isConfirmed, points)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [firstName, lastName, email, password, role, fishingLicence, pcoc, isConfirmed, points]);
     return getUserById(res.insertId);
 }

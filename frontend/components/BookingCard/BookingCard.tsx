@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { upperFirst, useDisclosure } from '@mantine/hooks';
 import React from 'react';
 import { ISO_DATE_FORMAT, NUM_BOATS, STRING_DATE_FORMAT } from '@/utils/constants';
-import { useDeleteMyBookingMutation, useGetUsersForBookingQuery, usePostMyBookingMutation, usePostPriorityBookingMutation } from '@/services/bookingsApi';
+import { useDeleteMyBookingMutation, useDeletePriorityBookingMutation, useGetUsersForBookingQuery, usePostMyBookingMutation, usePostPriorityBookingMutation } from '@/services/bookingsApi';
 import { useAppSelector } from '@/utils/reduxHooks';
 import { selectCurrentUser } from '@/state/authSelectors';
 import { WeatherIcon } from '../WeatherIcon/WeatherIcon';
@@ -49,6 +49,8 @@ export const BookingCard = ({ date, isMorningBooking, user } : BookingCardType) 
     const [createPriorityBooking, { status: createPriorityBookingStatus }] =
         usePostPriorityBookingMutation();
     const [deleteMyBooking, { status: deleteBookingStatus }] = useDeleteMyBookingMutation();
+    const [deletePriorityBooking, { status: deletePriorityBookingStatus }] =
+        useDeletePriorityBookingMutation();
 
     const {
         points: myPoints,
@@ -186,8 +188,14 @@ export const BookingCard = ({ date, isMorningBooking, user } : BookingCardType) 
                     </Button>
                     <Button
                       onClick={async () => {
-                        if (user !== undefined) {
+                        if (user !== undefined && !hasCurrentUserBooked) {
                             await createPriorityBooking({
+                                date: ISODateString,
+                                isMorningBooking,
+                                userId: user.userId,
+                            });
+                        } else if (hasCurrentUserBooked && user !== undefined) {
+                            await deletePriorityBooking({
                                 date: ISODateString,
                                 isMorningBooking,
                                 userId: user.userId,
@@ -210,7 +218,8 @@ export const BookingCard = ({ date, isMorningBooking, user } : BookingCardType) 
                         isGetUserFetching ||
                         createBookingStatus === 'pending' ||
                         deleteBookingStatus === 'pending' ||
-                        createPriorityBookingStatus === 'pending'
+                        createPriorityBookingStatus === 'pending' ||
+                        deletePriorityBookingStatus === 'pending'
                     }
                     >
                         {hasCurrentUserBooked ? 'Remove booking' : `Sign up${user !== undefined ? ` ${upperFirst(user.firstName)} with priority` : ''}`}
