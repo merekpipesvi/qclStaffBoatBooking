@@ -3,6 +3,7 @@ import { format, isAfter, isBefore, setHours, setMinutes, subDays } from 'date-f
 import styles from './Confirmation.module.css';
 import { useConfirmMyBookingMutation, useGetMyBookingsNeedingConfirmationQuery, useUnconfirmMyBookingMutation } from '@/services/bookingsApi';
 import { STRING_DATE_FORMAT } from '@/utils/constants';
+import { useCutOffTimes } from '@/utils/useCutoffDates';
 
 const NoConfirmationsAvailable = ({ isAfterCutOff, hasNoBookings }:
     { isAfterCutOff: boolean; hasNoBookings: boolean }) => (
@@ -23,27 +24,22 @@ const NoConfirmationsAvailable = ({ isAfterCutOff, hasNoBookings }:
     );
 
 export const ConfirmationPaper = () => {
-    const currentDate = new Date();
-    // Check if it's currently after 10pm
-    const isAfterCutOff = isAfter(currentDate, setHours(setMinutes(new Date(), 0), 22));
-
-    // Check if it's currently before 8pm
-    const isBeforeConfirmation = isBefore(currentDate, setHours(setMinutes(new Date(), 0), 20));
+    const { isAfterConfirmCutOff, isAfterSignUpCutOff} = useCutOffTimes();
+    const isOutOfConfirmationWindow = isAfterConfirmCutOff || (!isAfterConfirmCutOff && !isAfterSignUpCutOff);
     const { data, refetch: refetchBookings } = useGetMyBookingsNeedingConfirmationQuery(undefined, {
-        skip: isAfterCutOff || isBeforeConfirmation,
+        skip: isOutOfConfirmationWindow,
     });
     const [confirmMyBooking] = useConfirmMyBookingMutation();
     const [unconfirmMyBooking] = useUnconfirmMyBookingMutation();
-
     return (
         <div className={styles.container}>
-            {isAfterCutOff || isBeforeConfirmation || data?.length === 0 ?
+            {isOutOfConfirmationWindow || data?.length === 0 ?
             <NoConfirmationsAvailable
-              isAfterCutOff={isAfterCutOff}
+              isAfterCutOff={isAfterConfirmCutOff}
               hasNoBookings={data?.length === 0}
             /> :
             (data ?? []).map(({ isMorningBooking, date, bookingId, isConfirmed }) => (
-                <Paper>
+                <Paper key={`${isMorningBooking}-${date}`}>
                     <Stack p="lg" gap={0} ta="center">
                         <Text size="lg">{format(date, STRING_DATE_FORMAT)}</Text>
                         {isMorningBooking === undefined ? null :

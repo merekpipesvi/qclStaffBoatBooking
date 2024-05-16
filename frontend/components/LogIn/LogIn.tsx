@@ -70,7 +70,7 @@ export const LogIn = (props: PaperProps) => {
             label="Email"
             placeholder="fish@qcl.com"
             value={form.values.email}
-            onChange={(event) => form.setFieldValue('email', event.currentTarget.value)}
+            onChange={(event) => form.setFieldValue('email', event.currentTarget.value.trim())}
             error={form.errors.email}
             radius="md"
           />

@@ -22,6 +22,11 @@ export async function getUsers() {
     return rows;
 }
 
+export async function getAdminEmails() {
+    const [rows] = await pool.query(`SELECT email FROM qcl.user WHERE role = 'admin'`);
+    return rows;
+}
+
 export async function getUserForLogIn(email) {
     const [rows] = await pool.query(`SELECT ${getUserColumnsString}, password, isConfirmed FROM qcl.user WHERE email = ?`, [email]);
     return rows[0];
@@ -77,7 +82,7 @@ export async function getFutureHalfDays() {
 }
 
 export async function isHalfDay({date}) {
-    const [rows] = await pool.query('SELECT isHalfDay FROM qcl.day WHERE date = ?', [date]);
+    const [rows] = await pool.query('SELECT * FROM qcl.halfDay WHERE date = ?', [date]);
     return rows[0] != null;
 }
 
@@ -181,11 +186,20 @@ export async function updateBookingIsConfirmedAfterInsertion({date, isMorningBoo
     return true;
 }
 
+export async function getUserIdsForBoatAssignments({dateString, isMorningBooking, boatsAvailableForDate}) {
+    const [rows] = await pool.query(
+        `SELECT  b.userId, u.firstName, u.lastName FROM booking AS b JOIN user AS u ON u.userId = b.userId
+        WHERE b.date = ? AND b.isMorningBooking IS ? AND (b.isConfirmed = 1 OR b.isConfirmed IS NULL)
+        ORDER BY b.isPriority DESC, u.points, b.timeBooked LIMIT 0, ${boatsAvailableForDate.toString()}`, 
+        [dateString, isMorningBooking]
+    );
+    return rows;
+}
+
 export async function createBooking({date, isMorningBooking, userPoints, isPriority, userId}) {
     const numBoatsUnavailable = await getNumBoatsUnavailableByDate({date});
     const boatsAvailableForDate = BOATS_AVAILABLE - Object.values(numBoatsUnavailable)[0];
     
-
     await pool.query(`
         INSERT INTO booking (date, isMorningBooking, isConfirmed, userId, timeBooked, isPriority)
         VALUES (?, ?, 
@@ -257,14 +271,12 @@ export async function getUserIdsOfBookingsNeedingConfirmation({dateString}) {
     WHERE date = ?;
     `, [today]);
 
-    const todaysDayOfWeek = getDay(today);
-    const [daysRows] = await pool.query('SELECT * FROM qcl.day WHERE day = ?', [todaysDayOfWeek]);
-    const { isHalfDay } = daysRows[0];
+    const isDateAHalfDay = await isHalfDay({date: dateString});
 
-    const numBoatsUnavailable = await getNumBoatsUnavailableByDate({today});
+    const numBoatsUnavailable = await getNumBoatsUnavailableByDate({date: today});
     const boatsAvailableForDate = BOATS_AVAILABLE - Object.values(numBoatsUnavailable)[0];
 
-    if(isHalfDay) {
+    if(isDateAHalfDay) {
         const { satisfied: morningBookings, unsatisfied: eveningBookings } = 
             splitFilter({array: allBookings, condition: ({isMorningBooking}) => (isMorningBooking)
         })
@@ -286,6 +298,10 @@ export async function getUserIdsOfBookingsNeedingConfirmation({dateString}) {
             confirmed.length >= boatsAvailableForDate ? [] : needsConfirmation.map(({userId}) => userId)
         ];
     }
+}
+
+export async function getEmailsOfConfirmedBookings({dateString}) {
+
 }
 
 // #endregion

@@ -1,14 +1,16 @@
 import { Button, Group, Paper, PaperProps, Stack, Text } from '@mantine/core';
 import { DatePicker, DatePickerInput } from '@mantine/dates';
-import { addDays, format, isSameMonth } from 'date-fns';
+import { addDays, format, isSameMonth, startOfToday, startOfTomorrow } from 'date-fns';
 import React from 'react';
 import { useRouter } from 'next/router';
 import styles from './MainPageCalendar.module.css';
 import { END_URL_ARG, ISO_DATE_FORMAT, NUM_DAYS_BOOKABLE, START_URL_ARG } from '@/utils/constants';
+import { useCutOffTimes } from '@/utils/useCutoffDates';
 
 export const MainPageCalendar = (props: PaperProps) => {
     const [value, setValue] = React.useState<[Date | null, Date | null]>([null, null]);
-    const minDate = new Date();
+    const { isAfterSignUpCutOff } = useCutOffTimes();
+    const minDate = isAfterSignUpCutOff ? startOfTomorrow() : startOfToday();
     const maxDate = addDays(new Date(), NUM_DAYS_BOOKABLE);
     const numColumns = isSameMonth(maxDate, minDate) ? 1 : 2;
     const router = useRouter();
@@ -38,7 +40,7 @@ export const MainPageCalendar = (props: PaperProps) => {
                   allowSingleDateInRange
                   value={value}
                   onChange={setValue}
-                  minDate={new Date()}
+                  minDate={minDate}
                   maxDate={addDays(new Date(), NUM_DAYS_BOOKABLE)}
                   weekendDays={[]} // Weekend days are a different colour, we don't want that
                   numberOfColumns={numColumns}

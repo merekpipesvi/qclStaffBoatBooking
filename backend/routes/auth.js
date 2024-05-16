@@ -23,6 +23,10 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     
     const user = await getUserForLogIn(email);
+
+    if(user === undefined) {
+        res.status(401).json("Account not on record.")
+    }
     const passwordsMatch = await bcrypt.compare(password, user.password);
     // Using the error response as messages in the log in page.
     if (user == null || !passwordsMatch) {
