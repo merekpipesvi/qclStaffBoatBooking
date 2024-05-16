@@ -18,4 +18,4 @@ jobs:
         run: |
           postman collection run "21465020-28113d9c-4e28-424a-992e-13e2a762d260"
       - name: Logout
-        run: postman logout ${{ secrets.POSTMAN_API_KEY }}
+        run: echo -e "Yes\n" | postman logout ${{ secrets.POSTMAN_API_KEY }}
