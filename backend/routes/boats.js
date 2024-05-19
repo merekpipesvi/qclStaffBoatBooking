@@ -9,6 +9,7 @@ import {
   updateBookingIsConfirmedAfterInsertion 
 } from '../database.js';
 import { keepAlive, validateToken } from '../JWT.js';
+import { adminOnly } from '../middleware.js';
 import { BOATS_AVAILABLE, ISO_DATE_FORMAT } from '../constants.js';
 import { format } from 'date-fns';
 
@@ -22,7 +23,7 @@ router.get("/", async (req, res) => {
     const dateBoatMapping = {};
 
     boats.forEach(({ boatId, dateUnavailable }) => {
-        const date = dateUnavailable.toLocaleDateString();
+        const date = format(dateUnavailable, ISO_DATE_FORMAT);
         if (!dateBoatMapping[date]) {
           dateBoatMapping[date] = [];
         }
@@ -31,8 +32,7 @@ router.get("/", async (req, res) => {
     res.send(dateBoatMapping);
 })
 
-//TODO figure out what needs admin and what can be hit by standard and apply it
-router.put("/:boatId", async (req, res) => {
+router.put("/:boatId", adminOnly, async (req, res) => {
   // expects dates to be of type Date[]
   const { dates } = req.body;
   const boatId = req.params.boatId;
@@ -46,7 +46,7 @@ router.put("/:boatId", async (req, res) => {
   res.send(true);
 })
 
-router.delete("/:boatId", async (req, res) => {
+router.delete("/:boatId", adminOnly, async (req, res) => {
   // expects dates to be of type Date[]
   const { dates } = req.body;
   const boatId = req.params.boatId;
