@@ -12,6 +12,7 @@ export const sendConfirmationNeededEmail = async ({userId}) => {
                 user: process.env.NODE_MAILER_EMAIL,
                 pass: process.env.NODE_MAILER_PASS,
             },
+            port: 465,
         });
 
         const mailOptions = {
