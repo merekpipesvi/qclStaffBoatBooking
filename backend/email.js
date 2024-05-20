@@ -108,6 +108,7 @@ export const sendAllConfirmationNeededEmails = async () => {
     const userIdsArr = await getUserIdsOfBookingsNeedingConfirmation(
         {dateString: format(startOfToday(), ISO_DATE_FORMAT)}
     );
+    console.log(userIdsArr);
     const oAuthAccessToken = await getOAuthToken();
 
     userIdsArr.flat().forEach((userId) => 
