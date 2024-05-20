@@ -1,5 +1,5 @@
 import { Button, Paper, Stack, Text } from '@mantine/core';
-import { format, isAfter, isBefore, setHours, setMinutes, subDays } from 'date-fns';
+import { addDays, format, isAfter, isBefore, setHours, setMinutes, subDays } from 'date-fns';
 import styles from './Confirmation.module.css';
 import { useConfirmMyBookingMutation, useGetMyBookingsNeedingConfirmationQuery, useUnconfirmMyBookingMutation } from '@/services/bookingsApi';
 import { STRING_DATE_FORMAT } from '@/utils/constants';
@@ -11,20 +11,17 @@ const NoConfirmationsAvailable = ({ isAfterCutOff, hasNoBookings }:
             {hasNoBookings ?
             <Stack ta="center" w="22rem">
                 <Text fw={700}>No bookings needing confirmation today.</Text>
-                <Text>
-                    If you&apos;ve already confirmed your booking,
-                    you will get an email assigning you a boat at 10pm
-                </Text>
             </Stack> :
             <Stack ta="center">
-                <Text fw={700}>You&apos;ve missed the cutoff point!</Text>
-                <Text>{`Boats have already been assigned for ${format(subDays(new Date(), isAfterCutOff ? 0 : 1), STRING_DATE_FORMAT)}.`}</Text>
+                <Text fw={700}>You&apos;ve missed the confirmation cutoff point!</Text>
+                <Text>{`Boats have already been assigned for ${format(addDays(new Date(), isAfterCutOff ? 1 : 0), STRING_DATE_FORMAT)}.`}</Text>
             </Stack>}
         </Paper>
     );
 
 export const ConfirmationPaper = () => {
     const { isAfterConfirmCutOff, isAfterSignUpCutOff} = useCutOffTimes();
+    console.log(isAfterConfirmCutOff)
     const isOutOfConfirmationWindow = isAfterConfirmCutOff || (!isAfterConfirmCutOff && !isAfterSignUpCutOff);
     const { data, refetch: refetchBookings } = useGetMyBookingsNeedingConfirmationQuery(undefined, {
         skip: isOutOfConfirmationWindow,
