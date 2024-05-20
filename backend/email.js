@@ -62,7 +62,7 @@ export const sendConfirmationNeededEmail = async ({userId}) => {
                     <p>Hey ${user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1)},</p>
                     <p>Someone ahead of you has cancelled their booking!</p>
                     <p>If you still want the boat tomorrow, please confirm by clicking the button below.</p>
-                    <a href="http://localhost:3000/?deepLink=/confirmation" class="button">Confirm Booking</a>
+                    <a href="http://qclstaffboats.com/?deepLink=/confirmation" class="button">Confirm Booking</a>
                     <p>
                         If you have the highest priority of all people who confirm, you'll get
                         an email of your assigned boat at ${TIME_OF_DECISION}.
@@ -141,9 +141,9 @@ export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooki
         };
 
         await transporter.sendMail(mailOptions);
-        return { message: 'Email sent successfully.' };
+        console.log('Email sent successfully.');
     } catch (error) {
-        return { message: `Error sending email: ${error}` };
+        console.log(`Error sending email: ${error}`);
     }
 }
 

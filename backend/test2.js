@@ -1,3 +1,3 @@
-import { sendAllBoatConfirmedEmails } from "./email";
+import { sendAllBoatConfirmedEmails } from "./email.js";
 
 sendAllBoatConfirmedEmails();
