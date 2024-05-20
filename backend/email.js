@@ -2,19 +2,39 @@ import nodemailer from 'nodemailer';
 import { getAdminEmails, getNumBoatsUnavailableByDate, getUserById, getUserIdsForBoatAssignments, getUserIdsOfBookingsNeedingConfirmation, isHalfDay } from './database.js';
 import { LOWEST_BOAT_ID, STRING_DATE_FORMAT, TIME_OF_DECISION, ISO_DATE_FORMAT, BOATS_AVAILABLE } from './constants.js';
 import { format, startOfToday, startOfTomorrow } from 'date-fns';
+import { google } from 'googleapis';
 
-export const sendConfirmationNeededEmail = async ({userId}) => {
+const getTransporter = ({oAuthAccessToken}) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            type: "OAuth2",
+            user: "qclstafffishing@gmail.com",
+            clientId: process.env.GMAIL_CLIENT_ID,
+            clientSecret: process.env.GMAIL_CLIENT_SECRET,
+            refreshToken: process.env.REFRESH_TOKEN,
+            accessToken: oAuthAccessToken,
+          },
+    });
+    return transporter;
+}
+
+const getOAuthToken = async () => {
+    const oAuth2Client = new google.auth.OAuth2(
+        process.env.GMAIL_CLIENT_ID, 
+        process.env.GMAIL_CLIENT_SECRET, 
+        'https://developers.google.com/oauthplayground'
+    );
+    oAuth2Client.setCredentials({refresh_token: process.env.REFRESH_TOKEN});
+    const oAuthAccessToken = await oAuth2Client.getAccessToken();
+    return oAuthAccessToken;
+}
+
+export const sendConfirmationNeededEmail = async ({userId, oAuthAccessToken}) => {
     try {
         const user = await getUserById(userId);
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.NODE_MAILER_EMAIL,
-                pass: process.env.NODE_MAILER_PASS,
-            },
-            port: 465,
-        });
-
+        const transporter = getTransporter({oAuthAccessToken});
+        
         const mailOptions = {
             from: process.env.NODE_MAILER_EMAIL,
             to: user.email,
@@ -74,7 +94,6 @@ export const sendConfirmationNeededEmail = async ({userId}) => {
             </html>
             `,
         };
-        console.log(transporter);
 
         await transporter.sendMail(mailOptions);
         console.log(`Email success to ${user?.email}`);
@@ -87,23 +106,18 @@ export const sendAllConfirmationNeededEmails = async () => {
     const userIdsArr = await getUserIdsOfBookingsNeedingConfirmation(
         {dateString: format(startOfToday(), ISO_DATE_FORMAT)}
     );
+    const oAuthAccessToken = await getOAuthToken();
 
     userIdsArr.flat().forEach((userId) => 
-        sendConfirmationNeededEmail({userId})
+        sendConfirmationNeededEmail({userId, oAuthAccessToken})
     );
 }
 
 
-export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooking}) => {
+export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooking, oAuthAccessToken}) => {
     try {
         const user = await getUserById(userId);
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.NODE_MAILER_EMAIL,
-                pass: process.env.NODE_MAILER_PASS,
-            },
-        });
+        const transporter = getTransporter({oAuthAccessToken});
 
         const mailOptions = {
             from: process.env.NODE_MAILER_EMAIL,
@@ -149,16 +163,10 @@ export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooki
     }
 }
 
-export const sendBoatListToAdmins = async ({usersArr, isMorningBooking}) => {
+export const sendBoatListToAdmins = async ({usersArr, isMorningBooking, oAuthAccessToken}) => {
     try {
         const adminEmails = await getAdminEmails();
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.NODE_MAILER_EMAIL,
-                pass: process.env.NODE_MAILER_PASS,
-            },
-        });
+        const transporter = getTransporter({oAuthAccessToken});
         adminEmails.forEach(({email: adminEmail}) => {
             const mailOptions = {
                 from: process.env.NODE_MAILER_EMAIL,
@@ -188,15 +196,15 @@ export const sendBoatListToAdmins = async ({usersArr, isMorningBooking}) => {
                         </tr>
                         <tr>
                             <td>Boat 34</td>
-                            <td>${usersArr?.[0]?.firstName} ${usersArr?.[0]?.lastName}</td>
+                            <td>${usersArr?.[0]?.firstName ?? ''} ${usersArr?.[0]?.lastName ?? ''}</td>
                         </tr>
                         <tr>
                             <td>Boat 35</td>
-                            <td>${usersArr?.[1]?.firstName} ${usersArr?.[1]?.lastName}</td>
+                            <td>${usersArr?.[1]?.firstName ?? ''} ${usersArr?.[1]?.lastName ?? ''}</td>
                         </tr>
                         <tr>
                             <td>Boat 36</td>
-                            <td>${usersArr?.[2]?.firstName} ${usersArr?.[2]?.lastName}</td>
+                            <td>${usersArr?.[2]?.firstName ?? ''} ${usersArr?.[2]?.lastName ?? ''}</td>
                         </tr>
                     </table>
                 </body>
@@ -219,9 +227,11 @@ export const sendAllBoatConfirmedEmails = async () => {
     const numBoatsUnavailable = await getNumBoatsUnavailableByDate({date: dateString});
     const boatsAvailableForDate = BOATS_AVAILABLE - Object.values(numBoatsUnavailable)[0];
 
+    const oAuthAccessToken = await getOAuthToken();
+
     (isDayAHalfDay ? [true, false] : [null]).forEach(async (isMorningBooking) => {
         const usersArr = await getUserIdsForBoatAssignments({dateString, isMorningBooking, boatsAvailableForDate});
-        usersArr.forEach(({userId}, index) => sendBoatConfirmedEmail({userId, boatNumber: LOWEST_BOAT_ID + index, isMorningBooking }))
-        sendBoatListToAdmins({usersArr});
+        usersArr.forEach(({userId}, index) => sendBoatConfirmedEmail({userId, boatNumber: LOWEST_BOAT_ID + index, isMorningBooking, oAuthAccessToken }))
+        sendBoatListToAdmins({usersArr, oAuthAccessToken});
     })
 }
