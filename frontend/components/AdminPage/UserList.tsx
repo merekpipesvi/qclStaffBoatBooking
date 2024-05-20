@@ -1,4 +1,4 @@
-import { Paper } from '@mantine/core';
+import { Button, Paper } from '@mantine/core';
 import { DataTable, DataTableSortStatus } from 'mantine-datatable';
 import { upperFirst } from '@mantine/hooks';
 import React from 'react';
@@ -9,6 +9,7 @@ import { ConfirmedUserButton } from './ConfirmedUserButton';
 import { PriorityBookingButton } from './PriorityBookingButton';
 import { DeleteUserButton } from './DeleteUserButton';
 import { GetUserAdminModel } from '@/models/user.model';
+import { ShowLicenceButton } from './ShowLicenceButton';
 
 export const UserList = () => {
     const { data: users = [] } = useGetUsersForAdminQuery();
@@ -66,6 +67,17 @@ export const UserList = () => {
                             lastName={lastName}
                             points={points}
                           />,
+                    },
+                    {
+                      accessor: 'fishingLicence',
+                      title: 'Licenses',
+                      render: ({pcoc, fishingLicence, firstName, lastName}) => 
+                        <ShowLicenceButton 
+                          pcoc={pcoc} 
+                          fishingLicence={fishingLicence} 
+                          firstName={firstName} 
+                          lastName={lastName}
+                        />
                     },
                     {
                       accessor: 'delete',
