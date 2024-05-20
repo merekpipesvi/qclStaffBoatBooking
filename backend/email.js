@@ -14,7 +14,7 @@ export const sendConfirmationNeededEmail = async ({userId}) => {
             },
         });
 
-        console.log(user);
+        console.log({mailer: process.env.NODE_MAILER_EMAIL, pass: process.env.NODE_MAILER_PASS});
 
         const mailOptions = {
             from: process.env.NODE_MAILER_EMAIL,
