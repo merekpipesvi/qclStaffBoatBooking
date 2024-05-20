@@ -13,7 +13,7 @@ router.post('/register', async (req, res) => {
         const hashPassword = await bcrypt.hash(password, HASH_ROUNDS);
         const shouldAutoConfirm = isBefore(new Date(), new Date('2024-06-01'));
         const createdUser = await createUser({ firstName, lastName, email, password: hashPassword, role: DEFAULT_USER_ROLE, fishingLicence, pcoc, isConfirmed: shouldAutoConfirm ? 1 : 0, points: 0 });
-        const accessToken = createTokens(user);
+        const accessToken = createTokens(createdUser);
         res.cookie(COOKIE_NAME, accessToken, { maxAge: 15*MINUTES, httpOnly: true, sameSite: 'none', secure: true });
         res.status(201).send(createdUser);
     } catch (error) {
