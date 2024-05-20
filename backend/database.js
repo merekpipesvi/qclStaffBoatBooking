@@ -273,7 +273,6 @@ export async function getUserIdsOfBookingsNeedingConfirmation({dateString}) {
 
     const isDateAHalfDay = await isHalfDay({date: dateString});
     const numBoatsUnavailable = await getNumBoatsUnavailableByDate({date: today});
-    console.log({dateString, today, numBoatsUnavailable});
     const boatsAvailableForDate = BOATS_AVAILABLE - Object.values(numBoatsUnavailable)[0];
 
     if(isDateAHalfDay) {
@@ -294,6 +293,7 @@ export async function getUserIdsOfBookingsNeedingConfirmation({dateString}) {
     } else {
         const { satisfied: confirmed, unsatisfied: needsConfirmation } = 
             splitFilter({array: allBookings, condition: ({isConfirmed}) => (isConfirmed === null)});
+        console.log({confirmed, needsConfirmation});
         return [
             confirmed.length >= boatsAvailableForDate ? [] : needsConfirmation.map(({userId}) => userId)
         ];
