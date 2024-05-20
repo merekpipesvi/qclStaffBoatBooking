@@ -293,7 +293,6 @@ export async function getUserIdsOfBookingsNeedingConfirmation({dateString}) {
     } else {
         const { satisfied: confirmed, unsatisfied: needsConfirmation } = 
             splitFilter({array: allBookings, condition: ({isConfirmed}) => (isConfirmed === null)});
-        console.log({confirmed, needsConfirmation, return: confirmed.length >= boatsAvailableForDate ? [] : needsConfirmation.map(({userId}) => userId)});
         return [
             confirmed.length >= boatsAvailableForDate ? [] : needsConfirmation.map(({userId}) => userId)
         ];
