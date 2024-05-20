@@ -6,7 +6,7 @@ import { google } from 'googleapis';
 
 const getTransporter = ({oAuthAccessToken}) => {
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
         secure: false,
         auth: {
             type: "OAuth2",
@@ -18,6 +18,7 @@ const getTransporter = ({oAuthAccessToken}) => {
           },
         port: 587,
     });
+
     return transporter;
 }
 
@@ -108,7 +109,6 @@ export const sendAllConfirmationNeededEmails = async () => {
     const userIdsArr = await getUserIdsOfBookingsNeedingConfirmation(
         {dateString: format(startOfToday(), ISO_DATE_FORMAT)}
     );
-    console.log(userIdsArr);
     const oAuthAccessToken = await getOAuthToken();
 
     userIdsArr.flat().forEach((userId) => 
