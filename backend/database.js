@@ -61,6 +61,15 @@ export async function deleteUser({userId}) {
     return true;
 }
 
+export async function incrementUserPoints({userId}) {
+    await pool.query(`
+        UPDATE qcl.user
+        SET points = points + 1
+        WHERE userId = ?;
+    `, [userId]);
+    return true;
+}
+
 // #endregion
 
 // #region days of the week
@@ -297,10 +306,6 @@ export async function getUserIdsOfBookingsNeedingConfirmation({dateString}) {
             confirmed.length >= boatsAvailableForDate ? [] : needsConfirmation.map(({userId}) => userId)
         ];
     }
-}
-
-export async function getEmailsOfConfirmedBookings({dateString}) {
-
 }
 
 // #endregion

@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { getAdminEmails, getNumBoatsUnavailableByDate, getUserById, getUserIdsForBoatAssignments, getUserIdsOfBookingsNeedingConfirmation, isHalfDay } from './database.js';
+import { getAdminEmails, getNumBoatsUnavailableByDate, getUserById, getUserIdsForBoatAssignments, getUserIdsOfBookingsNeedingConfirmation, incrementUserPoints, isHalfDay } from './database.js';
 import { LOWEST_BOAT_ID, STRING_DATE_FORMAT, TIME_OF_DECISION, ISO_DATE_FORMAT, BOATS_AVAILABLE } from './constants.js';
 import { format, startOfToday, startOfTomorrow } from 'date-fns';
 import { google } from 'googleapis';
@@ -160,6 +160,7 @@ export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooki
         };
 
         await transporter.sendMail(mailOptions);
+        await incrementUserPoints({userId});
         console.log('Email sent successfully.');
     } catch (error) {
         console.log(`Error sending email: ${error}`);
