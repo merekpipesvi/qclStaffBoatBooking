@@ -4,9 +4,9 @@ import { Button, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
 import { upperFirst, useDisclosure } from '@mantine/hooks';
 import React from 'react';
 import { useDeleteUserMutation } from '@/services/usersApi';
-import { GetUserAdminModel } from '@/models/user.model';
+import { GetUserModel } from '@/models/user.model';
 
-export const DeleteUserButton = ({ userId, firstName, lastName }: Pick<GetUserAdminModel, 'userId' | 'firstName' | 'lastName'>) => {
+export const DeleteUserButton = ({ userId, firstName, lastName }: Pick<GetUserModel, 'userId' | 'firstName' | 'lastName'>) => {
     const [deleteUser, deleteUserFlags] = useDeleteUserMutation();
     const [opened, { open, close }] = useDisclosure(false);
     const [textInput, setTextInput] = React.useState('');

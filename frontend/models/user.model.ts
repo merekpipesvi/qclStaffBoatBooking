@@ -9,12 +9,8 @@ type UserModel = {
     fishingLicence: string;
     points: number;
     password: string;
+    isConfirmed: boolean; 
     pcoc?: string;
-};
-
-// We don't need to send this for most use cases
-type IsConfirmed = {
-    isConfirmed: boolean;
 };
 
 export type GetUserModel = Omit<UserModel, 'password'>;
@@ -25,5 +21,4 @@ export type PostLogInModel = Pick<UserModel, 'email' | 'password'>;
 
 export type GetUserForBookingModel = Pick<UserModel, 'firstName' | 'lastName' | 'points' | 'userId'> & Pick<GetBookingModel, 'isPriority' | 'timeBooked'>;
 
-export type GetUserAdminModel = UserModel & IsConfirmed;
-export type PatchUserAdminModel = { userId: GetUserAdminModel['userId']; points?: GetUserAdminModel['points']; isConfirmed?: GetUserAdminModel['isConfirmed']; };
+export type PatchUserAdminModel = { userId: GetUserModel['userId']; points?: GetUserModel['points']; isConfirmed?: GetUserModel['isConfirmed']; };

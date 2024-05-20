@@ -8,19 +8,19 @@ import { PointsIncrement } from './PointsIncrement';
 import { ConfirmedUserButton } from './ConfirmedUserButton';
 import { PriorityBookingButton } from './PriorityBookingButton';
 import { DeleteUserButton } from './DeleteUserButton';
-import { GetUserAdminModel } from '@/models/user.model';
+import { GetUserModel } from '@/models/user.model';
 import { ShowLicenceButton } from './ShowLicenceButton';
 
 export const UserList = () => {
     const { data: users = [] } = useGetUsersForAdminQuery();
-    const [sortStatus, setSortStatus] = React.useState<DataTableSortStatus<GetUserAdminModel>>({
+    const [sortStatus, setSortStatus] = React.useState<DataTableSortStatus<GetUserModel>>({
       columnAccessor: 'isConfirmed',
       direction: 'asc',
     });
     const [records, setRecords] = React.useState(sortBy(users, 'confirmed'));
 
     React.useEffect(() => {
-      const data = sortBy(users, sortStatus.columnAccessor) as GetUserAdminModel[];
+      const data = sortBy(users, sortStatus.columnAccessor) as GetUserModel[];
       setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
     }, [sortStatus, users]);
 

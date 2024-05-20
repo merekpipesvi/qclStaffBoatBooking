@@ -19,10 +19,6 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 
 export default function App({ Component, pageProps }: AppProps) {
-  React.useEffect(() => {
-
-  });
-
   return (
     <Provider store={store}>
       <MantineProvider theme={theme}>
@@ -32,7 +28,7 @@ export default function App({ Component, pageProps }: AppProps) {
             name="viewport"
             content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
           />
-          <link rel="shortcut icon" href="/favicon.svg" />
+          <link rel="shortcut icon" href="../../static/QCL_Q.png" />
         </Head>
         <AuthWrapper>
           <main className="spa">

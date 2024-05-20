@@ -5,6 +5,7 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useExtendSessionQuery, useGetMeQuery } from '@/services/authApi';
 import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner';
 import { useIsOnLogin } from './useIsOnLogin';
+import { Container, Paper, Stack, Text } from '@mantine/core';
 
 export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -40,5 +41,24 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
     };
   }, [router.route, isFetchingMe, isExtending]);
 
-  return (isFetchingMe || (currentUser === undefined && !isOnLoginPage) || isIllegallyOnAdminPage ? <LoadingSpinner /> : children);
+  if(currentUser !== undefined && !currentUser.isConfirmed) {
+    return (
+      <Container size="15rem" mt='md' pt="10rem">
+        <Paper withBorder>
+          <Stack ta="center">
+            <Text fw={700}>
+              Your account is unconfirmed!
+            </Text>
+            <Text>
+              Please politely annoy an admin to confirm it for you.
+            </Text>
+          </Stack>
+        </Paper>
+      </Container>
+    );
+  } else {
+    return (isFetchingMe || (currentUser === undefined && !isOnLoginPage) || isIllegallyOnAdminPage ? <LoadingSpinner /> : children);
+  }
+
+  
 };

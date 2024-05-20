@@ -16,8 +16,6 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { useLoginMutation, useRegisterMutation } from '@/services/authApi';
 import styles from './Login.module.css';
-import { useAppSelector } from '@/utils/reduxHooks';
-import { selectCurrentUser } from '@/state/authSelectors';
 import { DEEPLINK_URL_ARG } from '@/utils/constants';
 
 export const LogIn = (props: PaperProps) => {
@@ -30,6 +28,7 @@ export const LogIn = (props: PaperProps) => {
       password: '',
       fishingLicence: '',
       pcoc: '',
+      isConfirmed: false,
     },
 
     validate: {

@@ -15,7 +15,7 @@ const pool = mysql.createPool({
 
 // #region users
 
-const getUserColumnsString = 'userId, firstName, lastName, email, role, fishingLicence, points, pcoc';
+const getUserColumnsString = 'userId, firstName, lastName, email, role, fishingLicence, points, pcoc, isConfirmed';
 
 export async function getUsers() {
     const [rows] = await pool.query(`SELECT ${getUserColumnsString}, isConfirmed FROM qcl.user`);
@@ -28,7 +28,7 @@ export async function getAdminEmails() {
 }
 
 export async function getUserForLogIn(email) {
-    const [rows] = await pool.query(`SELECT ${getUserColumnsString}, password, isConfirmed FROM qcl.user WHERE email = ?`, [email]);
+    const [rows] = await pool.query(`SELECT ${getUserColumnsString}, password FROM qcl.user WHERE email = ?`, [email]);
     return rows[0];
 }
 

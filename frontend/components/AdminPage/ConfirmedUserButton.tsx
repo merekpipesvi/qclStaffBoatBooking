@@ -2,10 +2,10 @@ import { faCheckCircle, faXmarkCircle } from '@fortawesome/free-regular-svg-icon
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Center, Group, Modal, Stack, Text } from '@mantine/core';
 import { upperFirst, useDisclosure } from '@mantine/hooks';
-import { GetUserAdminModel } from '@/models/user.model';
+import { GetUserModel } from '@/models/user.model';
 import { usePatchUserForAdminMutation } from '@/services/usersApi';
 
-export const ConfirmedUserButton = ({ isConfirmed, userId, firstName } : Pick<GetUserAdminModel, 'userId' | 'isConfirmed' | 'firstName'>) => {
+export const ConfirmedUserButton = ({ isConfirmed, userId, firstName } : Pick<GetUserModel, 'userId' | 'isConfirmed' | 'firstName'>) => {
     const [opened, { open, close }] = useDisclosure(false);
     const [patchUser, patchFlags] = usePatchUserForAdminMutation();
     return (

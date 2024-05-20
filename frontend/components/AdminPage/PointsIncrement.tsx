@@ -1,10 +1,10 @@
 import { Button, Group, Modal, NumberInput, Text } from '@mantine/core';
 import { upperFirst, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
-import { GetUserAdminModel } from '@/models/user.model';
+import { GetUserModel } from '@/models/user.model';
 import { usePatchUserForAdminMutation } from '@/services/usersApi';
 
-export const PointsIncrement = ({ points, firstName, lastName, userId }: Pick<GetUserAdminModel, 'points' | 'firstName' | 'lastName' | 'userId'>) => {
+export const PointsIncrement = ({ points, firstName, lastName, userId }: Pick<GetUserModel, 'points' | 'firstName' | 'lastName' | 'userId'>) => {
     const [opened, { open, close }] = useDisclosure(false);
     const form = useForm({
         initialValues: {

@@ -1,10 +1,10 @@
-import { GetUserAdminModel } from "@/models/user.model";
+import { GetUserModel } from "@/models/user.model";
 import { Button, Modal, Stack, Text } from "@mantine/core";
 import { upperFirst } from "@mantine/hooks";
 import React from "react";
 
 export const ShowLicenceButton = ({firstName, lastName, pcoc, fishingLicence}: 
-  Pick<GetUserAdminModel, 'firstName' | 'lastName' | 'pcoc' | 'fishingLicence'>) => {
+  Pick<GetUserModel, 'firstName' | 'lastName' | 'pcoc' | 'fishingLicence'>) => {
     const [showLicence, setShowLicence] = React.useState(false);
     return(
         <>
