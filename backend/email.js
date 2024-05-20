@@ -74,7 +74,7 @@ export const sendConfirmationNeededEmail = async ({userId}) => {
             </html>
             `,
         };
-        console.log('got here...');
+        console.log(transporter);
 
         await transporter.sendMail(mailOptions);
         console.log(`Email success to ${user?.email}`);
