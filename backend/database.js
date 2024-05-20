@@ -272,8 +272,8 @@ export async function getUserIdsOfBookingsNeedingConfirmation({dateString}) {
     `, [today]);
 
     const isDateAHalfDay = await isHalfDay({date: dateString});
-
     const numBoatsUnavailable = await getNumBoatsUnavailableByDate({date: today});
+    console.log({today, numBoatsUnavailable});
     const boatsAvailableForDate = BOATS_AVAILABLE - Object.values(numBoatsUnavailable)[0];
 
     if(isDateAHalfDay) {
