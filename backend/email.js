@@ -78,7 +78,7 @@ export const sendConfirmationNeededEmail = async ({userId}) => {
         await transporter.sendMail(mailOptions);
         console.log(`Email success to ${user?.email}`);
     } catch (error) {
-        console.log(`Email failure to ${user?.email}\n${error}`);
+        console.log(`Email failure.\n${error}`);
     }
 }
 
