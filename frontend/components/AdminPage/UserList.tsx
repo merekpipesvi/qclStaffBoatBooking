@@ -13,7 +13,7 @@ import { GetUserAdminModel } from '@/models/user.model';
 export const UserList = () => {
     const { data: users = [] } = useGetUsersForAdminQuery();
     const [sortStatus, setSortStatus] = React.useState<DataTableSortStatus<GetUserAdminModel>>({
-      columnAccessor: 'confirmed',
+      columnAccessor: 'isConfirmed',
       direction: 'asc',
     });
     const [records, setRecords] = React.useState(sortBy(users, 'confirmed'));
@@ -46,7 +46,8 @@ export const UserList = () => {
                       sortable: true,
                     },
                     {
-                      accessor: 'confirmed',
+                      accessor: 'isConfirmed',
+                      title: "Confirmed",
                       render: ({ isConfirmed, userId, firstName }) =>
                           <ConfirmedUserButton
                             userId={userId}
