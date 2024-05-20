@@ -16,6 +16,7 @@ const getTransporter = ({oAuthAccessToken}) => {
             refreshToken: process.env.REFRESH_TOKEN,
             accessToken: oAuthAccessToken,
           },
+        port: 587,
     });
     return transporter;
 }
