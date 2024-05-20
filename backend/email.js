@@ -7,7 +7,7 @@ import { google } from 'googleapis';
 const getTransporter = ({oAuthAccessToken}) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
-        secure: true,
+        secure: false,
         auth: {
             type: "OAuth2",
             user: "qclstafffishing@gmail.com",
