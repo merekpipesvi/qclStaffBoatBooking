@@ -14,8 +14,6 @@ export const sendConfirmationNeededEmail = async ({userId}) => {
             },
         });
 
-        console.log({mailer: process.env.NODE_MAILER_EMAIL, pass: process.env.NODE_MAILER_PASS});
-
         const mailOptions = {
             from: process.env.NODE_MAILER_EMAIL,
             to: user.email,
@@ -77,9 +75,9 @@ export const sendConfirmationNeededEmail = async ({userId}) => {
         };
 
         await transporter.sendMail(mailOptions);
-        return { message: 'Email sent successfully.' };
+        console.log(`Email success to ${user?.email}`);
     } catch (error) {
-        return { message: `Error sending email: ${error}` };
+        console.log(`Email failure to ${user?.email}\n${error}`);
     }
 }
 
