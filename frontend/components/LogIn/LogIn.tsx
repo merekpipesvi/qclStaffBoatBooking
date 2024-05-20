@@ -41,14 +41,13 @@ export const LogIn = (props: PaperProps) => {
   const [registerUser, registerFlags] = useRegisterMutation();
   const [loginUser, loginFlags] = useLoginMutation();
   const router = useRouter();
-  const currentUser = useAppSelector(selectCurrentUser);
   const deeplink = router.query[DEEPLINK_URL_ARG] as string | null;
 
   React.useEffect(() => {
-    if (registerFlags.isSuccess || loginFlags.isSuccess || currentUser !== undefined) {
+    if (registerFlags.isSuccess || loginFlags.isSuccess) {
       router.push(deeplink ?? '/booking');
     }
-  }, [router, registerFlags.isSuccess, loginFlags.isSuccess, currentUser, deeplink]);
+  }, [router, registerFlags.isSuccess, loginFlags.isSuccess, deeplink]);
 
   const onSubmit = () => {
     const onSubmitFunction = type === 'login' ? loginUser : registerUser;

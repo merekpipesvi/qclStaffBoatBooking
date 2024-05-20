@@ -3,8 +3,8 @@ import styles from './LoadingSpinner.module.css';
 
 export const LoadingSpinner = () => (
     <div className={styles.container}>
-        <Loader color="blue" size={100} />
-        <Text inherit variant="gradient" className={styles.loadingText}>
+        <Loader size={100} />
+        <Text className={styles.loadingText} c="qclRed">
           Loading...
         </Text>
     </div>);

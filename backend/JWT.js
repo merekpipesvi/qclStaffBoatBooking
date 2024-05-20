@@ -28,7 +28,7 @@ export const keepAlive = (req, res, next) => {
     if (!accessToken) {
         return res.status(400).json({ error: "User not authenticated :("});
     } else {
-        res.cookie(COOKIE_NAME, accessToken, { maxAge: 15*MINUTES, httpOnly: true, sameSite: 'none', secure: true });
+        res.cookie(COOKIE_NAME, accessToken, { maxAge: 30*MINUTES, httpOnly: true, sameSite: 'none', secure: true });
         return next();
     }
 }

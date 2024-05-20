@@ -1,14 +1,17 @@
-import { Image, ImageProps } from '@mantine/core';
+import { useIsOnLogin } from '@/utils/useIsOnLogin';
+import { Button, Image, ImageProps } from '@mantine/core';
 import { useRouter } from 'next/router';
 
 export const Logo = (props : Omit<ImageProps, 'src'>) => {
     const router = useRouter();
+    const isOnLogin = useIsOnLogin();
     return(
-        <Image 
-            src="https://www.queencharlottelodge.com/wp-content/uploads/2016/09/qcl-haida-gwaii.png" 
-            onClick={() => router.push('/booking')} 
-            style={{cursor: 'pointer'}}
-            {...props} 
-        />
+        <Button variant='subtle' h="60px">
+            <Image 
+                src="../../static/QCL_Logo.png" 
+                onClick={() => isOnLogin ? null : router.push('/booking')} 
+                {...props} 
+            />
+        </Button>
     );
 };
