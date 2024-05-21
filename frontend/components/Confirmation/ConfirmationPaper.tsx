@@ -21,7 +21,7 @@ const NoConfirmationsAvailable = ({ isAfterCutOff, hasNoBookings }:
 
 export const ConfirmationPaper = () => {
     const { isAfterConfirmCutOff, isAfterSignUpCutOff} = useCutOffTimes();
-    const isOutOfConfirmationWindow = isAfterConfirmCutOff || (!isAfterConfirmCutOff && !isAfterSignUpCutOff);
+    const isOutOfConfirmationWindow = isAfterConfirmCutOff || !isAfterSignUpCutOff;
     const { data, refetch: refetchBookings } = useGetMyBookingsNeedingConfirmationQuery(undefined, {
         skip: isOutOfConfirmationWindow,
     });
@@ -38,7 +38,7 @@ export const ConfirmationPaper = () => {
                 <Paper key={`${isMorningBooking}-${date}`}>
                     <Stack p="lg" gap={0} ta="center">
                         <Text size="lg">{format(date, STRING_DATE_FORMAT)}</Text>
-                        {isMorningBooking === undefined ? null :
+                        {isMorningBooking == null ? null :
                             <Text size="lg" fw={400} c="gray">
                                 {isMorningBooking ? '7am - 12pm' : '12pm - 5pm'}
                             </Text>
