@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
-import { getAdminEmails, getNumBoatsUnavailableByDate, getUserById, getUserIdsForBoatAssignments, getUserIdsOfBookingsNeedingConfirmation, incrementUserPoints, isHalfDay } from './database.js';
-import { LOWEST_BOAT_ID, STRING_DATE_FORMAT, TIME_OF_DECISION, ISO_DATE_FORMAT, BOATS_AVAILABLE } from './constants.js';
+import { getAdminEmails, getBoatsUnavailableDates, getNumBoatsUnavailableByDate, getUserById, getUserIdsForBoatAssignments, getUserIdsOfBookingsNeedingConfirmation, incrementUserPoints, isHalfDay } from './database.js';
+import { LOWEST_BOAT_ID, STRING_DATE_FORMAT, TIME_OF_DECISION, ISO_DATE_FORMAT, BOATS_AVAILABLE, BOATS_AVAILABLE_ARR } from './constants.js';
 import { format, startOfToday, startOfTomorrow } from 'date-fns';
 import { google } from 'googleapis';
 
@@ -167,7 +167,7 @@ export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooki
     }
 }
 
-export const sendBoatListToAdmins = async ({usersArr, isMorningBooking, oAuthAccessToken}) => {
+export const sendBoatListToAdmins = async ({usersArr, boatsAvailableForDateArr, isMorningBooking, oAuthAccessToken}) => {
     try {
         const adminEmails = await getAdminEmails();
         const transporter = getTransporter({oAuthAccessToken});
@@ -199,15 +199,15 @@ export const sendBoatListToAdmins = async ({usersArr, isMorningBooking, oAuthAcc
                             <th>Name</th>
                         </tr>
                         <tr>
-                            <td>Boat 34</td>
+                            <td>Boat ${boatsAvailableForDateArr?.[0] ?? 'Unavailable'}</td>
                             <td>${usersArr?.[0]?.firstName ?? ''} ${usersArr?.[0]?.lastName ?? ''}</td>
                         </tr>
                         <tr>
-                            <td>Boat 35</td>
+                            <td>Boat ${boatsAvailableForDateArr?.[1] ?? 'Unavailable'}</td>
                             <td>${usersArr?.[1]?.firstName ?? ''} ${usersArr?.[1]?.lastName ?? ''}</td>
                         </tr>
                         <tr>
-                            <td>Boat 36</td>
+                            <td>Boat ${boatsAvailableForDateArr?.[2] ?? 'Unavailable'}</td>
                             <td>${usersArr?.[2]?.firstName ?? ''} ${usersArr?.[2]?.lastName ?? ''}</td>
                         </tr>
                     </table>
@@ -228,14 +228,15 @@ export const sendBoatListToAdmins = async ({usersArr, isMorningBooking, oAuthAcc
 export const sendAllBoatConfirmedEmails = async () => {
     const dateString = format(startOfToday(), ISO_DATE_FORMAT);
     const isDayAHalfDay = await isHalfDay({date: dateString});
-    const numBoatsUnavailable = await getNumBoatsUnavailableByDate({date: dateString});
-    const boatsAvailableForDate = BOATS_AVAILABLE - Object.values(numBoatsUnavailable)[0];
+    const unavailableBoats = (await getBoatsUnavailableDates({startDate: dateString, endDate: dateString})).map(({boatId}) => boatId);
+    const boatsAvailableForDateArr= BOATS_AVAILABLE_ARR.filter((boatId) => !unavailableBoats.includes(boatId));
+    const boatsAvailableForDate = boatsAvailableForDateArr.length;
 
     const oAuthAccessToken = await getOAuthToken();
 
     (isDayAHalfDay ? [true, false] : [null]).forEach(async (isMorningBooking) => {
         const usersArr = await getUserIdsForBoatAssignments({dateString, isMorningBooking, boatsAvailableForDate});
-        usersArr.forEach(({userId}, index) => sendBoatConfirmedEmail({userId, boatNumber: LOWEST_BOAT_ID + index, isMorningBooking, oAuthAccessToken }))
-        sendBoatListToAdmins({usersArr, oAuthAccessToken});
+        usersArr.forEach(({userId}, index) => sendBoatConfirmedEmail({userId, boatNumber: boatsAvailableForDateArr[index], isMorningBooking, oAuthAccessToken }));
+        sendBoatListToAdmins({usersArr, boatsAvailableForDateArr, isMorningBooking, oAuthAccessToken});
     })
 }
