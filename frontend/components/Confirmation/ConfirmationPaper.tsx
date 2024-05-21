@@ -21,8 +21,6 @@ const NoConfirmationsAvailable = ({ isAfterCutOff, hasNoBookings }:
 
 export const ConfirmationPaper = () => {
     const { isAfterConfirmCutOff, isAfterSignUpCutOff} = useCutOffTimes();
-    console.log({date: new Date(), isAfterConfirmCutOff, isAfterSignUpCutOff})
-    console.log({eval: (!isAfterConfirmCutOff && !isAfterSignUpCutOff)})
     const isOutOfConfirmationWindow = isAfterConfirmCutOff || (!isAfterConfirmCutOff && !isAfterSignUpCutOff);
     const { data, refetch: refetchBookings } = useGetMyBookingsNeedingConfirmationQuery(undefined, {
         skip: isOutOfConfirmationWindow,
