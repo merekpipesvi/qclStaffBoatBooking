@@ -9,7 +9,7 @@ export const useGetStartEndDate = () => {
     const endDateStringFromURL = (router.query[END_URL_ARG] ?? '') as string;
  
     const { isAfterSignUpCutOff } = useCutOffTimes();
-    const beginningDay = isAfterSignUpCutOff ? startOfTomorrow() : startOfToday();
+    const beginningDay = addDays(startOfTomorrow(), isAfterSignUpCutOff ? 1 : 0);
     const lastDay = addDays(beginningDay, NUM_DAYS_BOOKABLE);
     const startDateString = isWithinInterval(parseISO(startDateStringFromURL), 
             {start: beginningDay, end: lastDay}

@@ -176,55 +176,63 @@ export const BookingCard = ({ date, isMorningBooking, user } : BookingCardType) 
                     : null}
                 </Flex>
             </Paper>
-            <Modal opened={opened} onClose={close} title={<ModalTitle isMorningBooking={isMorningBooking} date={date} />} size="auto" yOffset="15rem">
-                <BookingTable
-                  data={orderedList}
-                  hasCurrentUserBooked={hasCurrentUserBooked}
-                  user={user}
-                />
-                <Group justify="flex-end" p="2rem 1rem 0.25rem 0">
-                    <Button onClick={close} variant="default">
-                        Cancel
-                    </Button>
-                    <Button
-                      onClick={async () => {
-                        if (user !== undefined && !hasCurrentUserBooked) {
-                            await createPriorityBooking({
-                                date: ISODateString,
-                                isMorningBooking,
-                                userId: user.userId,
-                            });
-                        } else if (hasCurrentUserBooked && user !== undefined) {
-                            await deletePriorityBooking({
-                                date: ISODateString,
-                                isMorningBooking,
-                                userId: user.userId,
-                            });
-                        } else if (hasCurrentUserBooked) {
-                            await deleteMyBooking({
-                                date: ISODateString,
-                                isMorningBooking,
-                            });
-                        } else {
-                            await createBooking({
-                                date: ISODateString,
-                                isMorningBooking,
-                            });
+            <Modal 
+              opened={opened} 
+              onClose={close} 
+              title={<ModalTitle isMorningBooking={isMorningBooking} date={date} />} 
+              size="auto" 
+              yOffset="12rem"
+            >
+                <Stack h="18rem">
+                    <BookingTable
+                    data={orderedList}
+                    hasCurrentUserBooked={hasCurrentUserBooked}
+                    user={user}
+                    />
+                    <Group justify="flex-end" p="2rem 1rem 0.25rem 0" style={{flexGrow: 1, alignItems: 'flex-end'}}>
+                        <Button onClick={close} variant="default">
+                            Cancel
+                        </Button>
+                        <Button
+                        onClick={async () => {
+                            if (user !== undefined && !hasCurrentUserBooked) {
+                                await createPriorityBooking({
+                                    date: ISODateString,
+                                    isMorningBooking,
+                                    userId: user.userId,
+                                });
+                            } else if (hasCurrentUserBooked && user !== undefined) {
+                                await deletePriorityBooking({
+                                    date: ISODateString,
+                                    isMorningBooking,
+                                    userId: user.userId,
+                                });
+                            } else if (hasCurrentUserBooked) {
+                                await deleteMyBooking({
+                                    date: ISODateString,
+                                    isMorningBooking,
+                                });
+                            } else {
+                                await createBooking({
+                                    date: ISODateString,
+                                    isMorningBooking,
+                                });
+                            }
+                            close();
                         }
-                        close();
-                      }
-                    }
-                      disabled={
-                        isGetUserFetching ||
-                        createBookingStatus === 'pending' ||
-                        deleteBookingStatus === 'pending' ||
-                        createPriorityBookingStatus === 'pending' ||
-                        deletePriorityBookingStatus === 'pending'
-                    }
-                    >
-                        {hasCurrentUserBooked ? 'Remove booking' : `Sign up${user !== undefined ? ` ${upperFirst(user.firstName)} with priority` : ''}`}
-                    </Button>
-                </Group>
+                        }
+                        disabled={
+                            isGetUserFetching ||
+                            createBookingStatus === 'pending' ||
+                            deleteBookingStatus === 'pending' ||
+                            createPriorityBookingStatus === 'pending' ||
+                            deletePriorityBookingStatus === 'pending'
+                        }
+                        >
+                            {hasCurrentUserBooked ? 'Remove booking' : `Sign up${user !== undefined ? ` ${upperFirst(user.firstName)} with priority` : ''}`}
+                        </Button>
+                    </Group>
+                </Stack>
             </Modal>
         </>
     );

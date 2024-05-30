@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
-import { getAdminEmails, getBoatsUnavailableDates, getNumBoatsUnavailableByDate, getUserById, getUserIdsForBoatAssignments, getUserIdsOfBookingsNeedingConfirmation, incrementUserPoints, isHalfDay } from './database.js';
-import { LOWEST_BOAT_ID, STRING_DATE_FORMAT, TIME_OF_DECISION, ISO_DATE_FORMAT, BOATS_AVAILABLE, BOATS_AVAILABLE_ARR } from './constants.js';
+import { getAdminEmails, getBoatsUnavailableDates, getUserById, getUserIdsForBoatAssignments, getUserIdsOfBookingsNeedingConfirmation, incrementUserPoints, isHalfDay } from './database.js';
+import { STRING_DATE_FORMAT, TIME_OF_DECISION, ISO_DATE_FORMAT, BOATS_AVAILABLE_ARR } from './constants.js';
 import { format, startOfToday, startOfTomorrow } from 'date-fns';
 import { google } from 'googleapis';
 
@@ -226,7 +226,7 @@ export const sendBoatListToAdmins = async ({usersArr, boatsAvailableForDateArr, 
 
 
 export const sendAllBoatConfirmedEmails = async () => {
-    const dateString = format(startOfToday(), ISO_DATE_FORMAT);
+    const dateString = format(startOfTomorrow(), ISO_DATE_FORMAT);
     const isDayAHalfDay = await isHalfDay({date: dateString});
     const unavailableBoats = (await getBoatsUnavailableDates({startDate: dateString, endDate: dateString})).map(({boatId}) => boatId);
     const boatsAvailableForDateArr= BOATS_AVAILABLE_ARR.filter((boatId) => !unavailableBoats.includes(boatId));
