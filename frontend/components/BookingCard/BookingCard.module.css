@@ -1,0 +1,13 @@
+.weatherIcon {
+    align-self: flex-end;
+    padding: 0.5rem 1rem 1rem 1rem;
+}
+
+.waitlist {
+    margin-top: auto;
+    padding: 0.5rem;
+}
+
+.myPotentialRow {
+    background-color: red;
+}

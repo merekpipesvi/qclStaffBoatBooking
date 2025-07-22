@@ -1,0 +1,14 @@
+.spa {
+    min-height: 100vh;
+    background-image: url('https://www.queencharlottelodge.com/wp-content/uploads/2023/05/20904012_2500.jpg');
+    background-position: top;
+    background-repeat: repeat-y;
+}
+
+li {
+    list-style-type: none;
+}
+
+.mantine-Modal-title {
+    width: 100%;
+}

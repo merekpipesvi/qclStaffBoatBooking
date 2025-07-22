@@ -1,0 +1,7 @@
+.loginFailed {
+    text-align: center;
+    color: var(--mantine-color-error);
+    margin: 0.5rem 0 -0.5rem 0;
+    font-weight: 600;
+    white-space: pre-line;
+}
