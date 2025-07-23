@@ -2,6 +2,9 @@
 
 A full-stack web application designed to manage bookings with a priority-based queue system, built to handle hundreds of users during peak season.
 
+**Scroll to the bottom for screenshots**
+Please note, I'm not a designer :)
+
 ## 🎯 Project Overview
 
 This custom booking system was developed to replace an existing booking process while maintaining the organization's established priority system. The application manages user bookings through a points-based priority queue, where users with fewer points receive higher booking priority.
