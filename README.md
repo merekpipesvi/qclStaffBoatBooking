@@ -3,7 +3,9 @@
 A full-stack web application designed to manage bookings with a priority-based queue system, built to handle hundreds of users during peak season.
 
 **Scroll to the bottom for screenshots**
+
 Please note, I'm not a designer :)
+
 
 ## 🎯 Project Overview
 
@@ -115,6 +117,8 @@ This project showcases end-to-end project management and development skills:
 3. **Implementation**: Full-stack development with consideration for user experience
 4. **Deployment**: Production deployment with custom infrastructure setup
 5. **Maintenance**: Ongoing system monitoring and maintenance
+
+
 
 
 # Screenshots of the Website
