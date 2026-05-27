@@ -1,2 +1,5 @@
 # Local deployment notes — contains admin credentials, never commit.
 DEPLOY.md
+
+# Dependencies — must be installed per-platform, never commit (breaks native modules like bcrypt on Linux).
+node_modules/
