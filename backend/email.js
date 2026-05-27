@@ -4,6 +4,10 @@ import { STRING_DATE_FORMAT, TIME_OF_DECISION, ISO_DATE_FORMAT, BOATS_AVAILABLE_
 import { format, startOfToday, startOfTomorrow } from 'date-fns';
 import { google } from 'googleapis';
 
+// Public URL of the frontend (Vercel). Used for deep links in emails.
+// Set FRONTEND_URL in Railway, e.g. https://your-app.vercel.app
+const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+
 const getTransporter = ({oAuthAccessToken}) => {
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
@@ -86,7 +90,7 @@ export const sendConfirmationNeededEmail = async ({userId, oAuthAccessToken}) =>
                     <p>Hey ${user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1)},</p>
                     <p>Someone ahead of you has cancelled their booking!</p>
                     <p>If you still want the boat tomorrow, please confirm by clicking the button below.</p>
-                    <a href="http://qclstaffboats.com/?deepLink=/confirmation" class="button">Confirm Booking</a>
+                    <a href="${FRONTEND_URL}/?deepLink=/confirmation" class="button">Confirm Booking</a>
                     <p>
                         If you have the highest priority of all people who confirm, you'll get
                         an email of your assigned boat at ${TIME_OF_DECISION}.
