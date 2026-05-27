@@ -41,8 +41,9 @@ const boatAssignmentEmails = new CronJob(
     'America/Los_Angeles', 
 );
 
-app.listen(8800, () => {
-    console.log('Server running on port 8800');
+const PORT = process.env.PORT || 8800;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
 
 
