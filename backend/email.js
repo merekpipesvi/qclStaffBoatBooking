@@ -110,14 +110,18 @@ export const sendConfirmationNeededEmail = async ({userId, oAuthAccessToken}) =>
 }
 
 export const sendAllConfirmationNeededEmails = async () => {
-    const userIdsArr = await getUserIdsOfBookingsNeedingConfirmation(
-        {dateString: format(startOfToday(), ISO_DATE_FORMAT)}
-    );
-    const oAuthAccessToken = await getOAuthToken();
+    try {
+        const userIdsArr = await getUserIdsOfBookingsNeedingConfirmation(
+            {dateString: format(startOfToday(), ISO_DATE_FORMAT)}
+        );
+        const oAuthAccessToken = await getOAuthToken();
 
-    userIdsArr.flat().forEach((userId) => 
-        sendConfirmationNeededEmail({userId, oAuthAccessToken})
-    );
+        userIdsArr.flat().forEach((userId) =>
+            sendConfirmationNeededEmail({userId, oAuthAccessToken})
+        );
+    } catch (error) {
+        console.log(`Failed to send confirmation-needed emails: ${error}`);
+    }
 }
 
 
@@ -230,17 +234,21 @@ export const sendBoatListToAdmins = async ({usersArr, boatsAvailableForDateArr, 
 
 
 export const sendAllBoatConfirmedEmails = async () => {
-    const dateString = format(startOfTomorrow(), ISO_DATE_FORMAT);
-    const isDayAHalfDay = await isHalfDay({date: dateString});
-    const unavailableBoats = (await getBoatsUnavailableDates({startDate: dateString, endDate: dateString})).map(({boatId}) => boatId);
-    const boatsAvailableForDateArr= BOATS_AVAILABLE_ARR.filter((boatId) => !unavailableBoats.includes(boatId));
-    const boatsAvailableForDate = boatsAvailableForDateArr.length;
+    try {
+        const dateString = format(startOfTomorrow(), ISO_DATE_FORMAT);
+        const isDayAHalfDay = await isHalfDay({date: dateString});
+        const unavailableBoats = (await getBoatsUnavailableDates({startDate: dateString, endDate: dateString})).map(({boatId}) => boatId);
+        const boatsAvailableForDateArr= BOATS_AVAILABLE_ARR.filter((boatId) => !unavailableBoats.includes(boatId));
+        const boatsAvailableForDate = boatsAvailableForDateArr.length;
 
-    const oAuthAccessToken = await getOAuthToken();
+        const oAuthAccessToken = await getOAuthToken();
 
-    (isDayAHalfDay ? [true, false] : [null]).forEach(async (isMorningBooking) => {
-        const usersArr = await getUserIdsForBoatAssignments({dateString, isMorningBooking, boatsAvailableForDate});
-        usersArr.forEach(({userId}, index) => sendBoatConfirmedEmail({userId, boatNumber: boatsAvailableForDateArr[index], isMorningBooking, oAuthAccessToken }));
-        sendBoatListToAdmins({usersArr, boatsAvailableForDateArr, isMorningBooking, oAuthAccessToken});
-    })
+        (isDayAHalfDay ? [true, false] : [null]).forEach(async (isMorningBooking) => {
+            const usersArr = await getUserIdsForBoatAssignments({dateString, isMorningBooking, boatsAvailableForDate});
+            usersArr.forEach(({userId}, index) => sendBoatConfirmedEmail({userId, boatNumber: boatsAvailableForDateArr[index], isMorningBooking, oAuthAccessToken }));
+            sendBoatListToAdmins({usersArr, boatsAvailableForDateArr, isMorningBooking, oAuthAccessToken});
+        })
+    } catch (error) {
+        console.log(`Failed to send boat-confirmed emails: ${error}`);
+    }
 }
