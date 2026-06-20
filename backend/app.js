@@ -10,6 +10,15 @@ import cookieParser from 'cookie-parser';
 import { API_BASE } from './constants.js';
 import { sendAllBoatConfirmedEmails, sendAllConfirmationNeededEmails } from './email.js';
 
+// Safety net: never let an unhandled async error in a cron job (or anywhere
+// else) take down the HTTP server. Log it and keep running.
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught exception:', err);
+});
+
 const app = express();
 app.use(express.json());
 app.use(cors({ credentials: true, origin: true }));

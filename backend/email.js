@@ -1,4 +1,3 @@
-import nodemailer from 'nodemailer';
 import { getAdminEmails, getBoatsUnavailableDates, getUserById, getUserIdsForBoatAssignments, getUserIdsOfBookingsNeedingConfirmation, incrementUserPoints, isHalfDay } from './database.js';
 import { STRING_DATE_FORMAT, TIME_OF_DECISION, ISO_DATE_FORMAT, BOATS_AVAILABLE_ARR } from './constants.js';
 import { format, startOfToday, startOfTomorrow } from 'date-fns';
@@ -8,41 +7,48 @@ import { google } from 'googleapis';
 // Set FRONTEND_URL in Railway, e.g. https://your-app.vercel.app
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 
-const getTransporter = ({oAuthAccessToken}) => {
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        secure: false,
-        auth: {
-            type: "OAuth2",
-            user: "qclstafffishing@gmail.com",
-            clientId: process.env.GMAIL_CLIENT_ID,
-            clientSecret: process.env.GMAIL_CLIENT_SECRET,
-            refreshToken: process.env.REFRESH_TOKEN,
-            accessToken: oAuthAccessToken,
-          },
-        port: 587,
-    });
+// Sender Gmail account. The OAuth refresh token must belong to this account.
+const SENDER_EMAIL = 'qclstafffishing@gmail.com';
 
-    return transporter;
-}
-
-const getOAuthToken = async () => {
+// Build an authenticated Gmail API client. Sends go over HTTPS (443) instead of
+// SMTP, so they aren't affected by hosts (e.g. Railway) that block SMTP ports.
+const getGmailClient = () => {
     const oAuth2Client = new google.auth.OAuth2(
-        process.env.GMAIL_CLIENT_ID, 
-        process.env.GMAIL_CLIENT_SECRET, 
+        process.env.GMAIL_CLIENT_ID,
+        process.env.GMAIL_CLIENT_SECRET,
         'https://developers.google.com/oauthplayground'
     );
     oAuth2Client.setCredentials({refresh_token: process.env.REFRESH_TOKEN});
-    const oAuthAccessToken = await oAuth2Client.getAccessToken();
-    return oAuthAccessToken;
+    return google.gmail({version: 'v1', auth: oAuth2Client});
 }
 
-export const sendConfirmationNeededEmail = async ({userId, oAuthAccessToken}) => {
+// Encode a full RFC-822 message as base64url, the format the Gmail API expects.
+const sendMessage = async ({gmailClient, from, to, subject, html}) => {
+    const message = [
+        `From: ${from ?? SENDER_EMAIL}`,
+        `To: ${to}`,
+        `Subject: ${subject}`,
+        'MIME-Version: 1.0',
+        'Content-Type: text/html; charset=utf-8',
+        '',
+        html,
+    ].join('\r\n');
+
+    const raw = Buffer.from(message, 'utf-8')
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+
+    await gmailClient.users.messages.send({userId: 'me', requestBody: {raw}});
+}
+
+export const sendConfirmationNeededEmail = async ({userId, gmailClient}) => {
     try {
         const user = await getUserById(userId);
-        const transporter = getTransporter({oAuthAccessToken});
-        
+
         const mailOptions = {
+            gmailClient,
             from: process.env.NODE_MAILER_EMAIL,
             to: user.email,
             subject: 'Action Needed For Your Boat Booking',
@@ -102,7 +108,7 @@ export const sendConfirmationNeededEmail = async ({userId, oAuthAccessToken}) =>
             `,
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendMessage(mailOptions);
         console.log(`Email success to ${user?.email}`);
     } catch (error) {
         console.log(`Email failure.\n${error}`);
@@ -114,10 +120,10 @@ export const sendAllConfirmationNeededEmails = async () => {
         const userIdsArr = await getUserIdsOfBookingsNeedingConfirmation(
             {dateString: format(startOfToday(), ISO_DATE_FORMAT)}
         );
-        const oAuthAccessToken = await getOAuthToken();
+        const gmailClient = getGmailClient();
 
         userIdsArr.flat().forEach((userId) =>
-            sendConfirmationNeededEmail({userId, oAuthAccessToken})
+            sendConfirmationNeededEmail({userId, gmailClient})
         );
     } catch (error) {
         console.log(`Failed to send confirmation-needed emails: ${error}`);
@@ -125,12 +131,12 @@ export const sendAllConfirmationNeededEmails = async () => {
 }
 
 
-export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooking, oAuthAccessToken}) => {
+export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooking, gmailClient}) => {
     try {
         const user = await getUserById(userId);
-        const transporter = getTransporter({oAuthAccessToken});
 
         const mailOptions = {
+            gmailClient,
             from: process.env.NODE_MAILER_EMAIL,
             to: user.email,
             subject: "You've been assigned a boat!",
@@ -167,7 +173,7 @@ export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooki
             `,
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendMessage(mailOptions);
         await incrementUserPoints({userId});
         console.log('Email sent successfully.');
     } catch (error) {
@@ -175,12 +181,12 @@ export const sendBoatConfirmedEmail = async ({userId, boatNumber, isMorningBooki
     }
 }
 
-export const sendBoatListToAdmins = async ({usersArr, boatsAvailableForDateArr, isMorningBooking, oAuthAccessToken}) => {
+export const sendBoatListToAdmins = async ({usersArr, boatsAvailableForDateArr, isMorningBooking, gmailClient}) => {
     try {
         const adminEmails = await getAdminEmails();
-        const transporter = getTransporter({oAuthAccessToken});
         adminEmails.forEach(({email: adminEmail}) => {
             const mailOptions = {
+                gmailClient,
                 from: process.env.NODE_MAILER_EMAIL,
                 to: adminEmail,
                 subject: `Boat Assignments${isMorningBooking == null ? ' for' : `-${isMorningBooking ? '7am to 12pm' : '12pm to 5pm'} on`} ${format(startOfTomorrow(), STRING_DATE_FORMAT)}`,
@@ -223,7 +229,7 @@ export const sendBoatListToAdmins = async ({usersArr, boatsAvailableForDateArr, 
                 </html>
                 `,
             };
-            transporter.sendMail(mailOptions);
+            sendMessage(mailOptions);
         });
 
         return { message: 'Email sent successfully.' };
@@ -241,12 +247,12 @@ export const sendAllBoatConfirmedEmails = async () => {
         const boatsAvailableForDateArr= BOATS_AVAILABLE_ARR.filter((boatId) => !unavailableBoats.includes(boatId));
         const boatsAvailableForDate = boatsAvailableForDateArr.length;
 
-        const oAuthAccessToken = await getOAuthToken();
+        const gmailClient = getGmailClient();
 
         (isDayAHalfDay ? [true, false] : [null]).forEach(async (isMorningBooking) => {
             const usersArr = await getUserIdsForBoatAssignments({dateString, isMorningBooking, boatsAvailableForDate});
-            usersArr.forEach(({userId}, index) => sendBoatConfirmedEmail({userId, boatNumber: boatsAvailableForDateArr[index], isMorningBooking, oAuthAccessToken }));
-            sendBoatListToAdmins({usersArr, boatsAvailableForDateArr, isMorningBooking, oAuthAccessToken});
+            usersArr.forEach(({userId}, index) => sendBoatConfirmedEmail({userId, boatNumber: boatsAvailableForDateArr[index], isMorningBooking, gmailClient }));
+            sendBoatListToAdmins({usersArr, boatsAvailableForDateArr, isMorningBooking, gmailClient});
         })
     } catch (error) {
         console.log(`Failed to send boat-confirmed emails: ${error}`);
